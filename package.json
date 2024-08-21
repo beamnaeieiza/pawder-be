@@ -1,0 +1,25 @@
+{
+  "name": "pawder-be",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+  "compile": "tsc -w",
+  "serve": "nodemon dist/server.js",
+  "start": "concurrently \"npm run compile\" \"npm run serve\""
+},
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "express": "^4.19.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  }
+}
