@@ -13,7 +13,7 @@ model User {
   email              String?
   username           String?
   password           String?
-  phone_number       Int?
+  phone_number       String?
   profile_url        String?
   firstname          String?
   lastname           String?
@@ -21,8 +21,8 @@ model User {
   subscription       Subscription?
   location_latitude  String?
   location_longitude String?
-  createdAt          DateTime?
-  updatedAt          DateTime?
+  createdAt          DateTime? @default(now())
+  updatedAt          DateTime? @updatedAt
   pets               Pet[]
   notifications      Notification[]
   matchesAsUser1     Match[]              @relation("UserMatches")
@@ -54,8 +54,8 @@ model Event {
   description String?
   eventDate   DateTime?
   status      Boolean?
-  createdAt   DateTime?
-  updatedAt   DateTime?
+  createdAt   DateTime? @default(now())
+  updatedAt   DateTime? @updatedAt
   owner       User                 @relation("OwnerEvents", fields: [owner_id], references: [user_id])
   enrollments Event_UserEnrolled[]
 }
@@ -65,8 +65,8 @@ model Notification {
   user_id         Int
   title           String?
   message         String?
-  createdAt       DateTime?
-  updatedAt       DateTime?
+  createdAt       DateTime? @default(now())
+  updatedAt       DateTime? @updatedAt
   user            User      @relation(fields: [user_id], references: [user_id])
 }
 
@@ -74,8 +74,8 @@ model Match {
   match_id   Int             @id @default(autoincrement())
   user_id1   Int
   user_id2   Int
-  createdAt  DateTime?
-  updatedAt  DateTime?
+  createdAt  DateTime? @default(now())
+  updatedAt  DateTime? @updatedAt
   userCreate User            @relation("UserMatches", fields: [user_id1], references: [user_id])
   // user2     User            @relation("User2Matches", fields: [user_id2], references: [user_id])
   messages   Match_Message[]
@@ -88,7 +88,7 @@ model Match_Message {
   receiver_id Int
   types       MessageType?
   message     String?
-  createdAt   DateTime?
+  createdAt   DateTime? @default(now())
   match       Match        @relation(fields: [match_id], references: [match_id])
 }
 
