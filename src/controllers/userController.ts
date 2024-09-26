@@ -97,7 +97,7 @@ export const getUserById = async (req: Request, res: Response) => {
 // Update a user by ID
 export const updateUser = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
-  const { firstname, lastname, email, gender, birthdate } = req.body;
+  const { firstname, lastname, email,gender, birthdate } = req.body;
   try {
     const user = await prisma.user.update({
       where: { user_id: parseInt(id) },
@@ -106,7 +106,7 @@ export const updateUser = async (req: Request, res: Response) => {
         lastname,
         email,
         gender,
-        birthdate,
+        birthdate
       },
     });
     res.json(user);
@@ -115,24 +115,50 @@ export const updateUser = async (req: Request, res: Response) => {
   }
 };
 
-// Create pet Profile
+//Create pet Profile
 export const createPet = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
-  const { petname, e } = req.body;
+  const { breed_id,petname,pet_url,gender,age,pet_description } = req.body;
   try {
     const user = await prisma.user.update({
       where: { user_id: parseInt(id) },
       data: {
         pets: {
           create: {
+            breed_id,
             petname,
-            breeds: {},
-          },
+            pet_description,
+            pet_url,
+            gender,
+            age
+
         },
       },
-    });
-    res.json(user);
+    },
+  });
+
+  const pet = await prisma.pet.findMany({
+    where: { user_id: parseInt(id) },
+  });
+    res.json(pet);
   } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: "Failed to update user" });
+  }
+};
+
+export const getPetList = async (req: Request, res: Response) => {
+  const id = (req as any).user.userId;
+  try {
+    const pet = await prisma.pet.findMany({
+      where: { user_id: parseInt(id) },
+      include: {
+        breed: true
+      }
+  })
+    res.json(pet);
+  } catch (error) {
+    console.log(error)
     res.status(500).json({ error: "Failed to update user" });
   }
 };

@@ -13,5 +13,7 @@ router.post(`${routeType}/login`, userController_1.login);
 router.get("/users", userController_1.getUsers);
 router.get("/users/getInfo", authMiddleware_1.default, userController_1.getUserById);
 router.put("/users/update", authMiddleware_1.default, userController_1.updateUser);
+router.post(`${routeType}/createPet`, authMiddleware_1.default, userController_1.createPet);
+router.get(`${routeType}/getPet`, authMiddleware_1.default, userController_1.getPetList);
 router.delete("/users/:id", userController_1.deleteUser);
 exports.default = router;

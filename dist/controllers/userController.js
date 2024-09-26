@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.createPet = exports.updateUser = exports.getUserById = exports.getUsers = exports.login = exports.signUp = void 0;
+exports.deleteUser = exports.getPetList = exports.createPet = exports.updateUser = exports.getUserById = exports.getUsers = exports.login = exports.signUp = void 0;
 const client_1 = require("@prisma/client");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -110,7 +110,7 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 lastname,
                 email,
                 gender,
-                birthdate,
+                birthdate
             },
         });
         res.json(user);
@@ -120,29 +120,54 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.updateUser = updateUser;
-// Create pet Profile
+//Create pet Profile
 const createPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
-    const { petname, e } = req.body;
+    const { breed_id, petname, pet_url, gender, age, pet_description } = req.body;
     try {
         const user = yield prisma.user.update({
             where: { user_id: parseInt(id) },
             data: {
                 pets: {
                     create: {
+                        breed_id,
                         petname,
-                        breeds: {},
+                        pet_description,
+                        pet_url,
+                        gender,
+                        age
                     },
                 },
             },
         });
-        res.json(user);
+        const pet = yield prisma.pet.findMany({
+            where: { user_id: parseInt(id) },
+        });
+        res.json(pet);
     }
     catch (error) {
+        console.log(error);
         res.status(500).json({ error: "Failed to update user" });
     }
 });
 exports.createPet = createPet;
+const getPetList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    try {
+        const pet = yield prisma.pet.findMany({
+            where: { user_id: parseInt(id) },
+            include: {
+                breed: true
+            }
+        });
+        res.json(pet);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to update user" });
+    }
+});
+exports.getPetList = getPetList;
 // Delete a user by ID
 const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
