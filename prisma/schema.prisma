@@ -17,12 +17,14 @@ model User {
   profile_url        String?
   firstname          String?
   lastname           String?
+  gender             String?
+  birthdate          DateTime?
   verify_status      Boolean?
   subscription       Subscription?
   location_latitude  String?
   location_longitude String?
-  createdAt          DateTime? @default(now())
-  updatedAt          DateTime? @updatedAt
+  createdAt          DateTime?            @default(now())
+  updatedAt          DateTime?            @updatedAt
   pets               Pet[]
   notifications      Notification[]
   matchesAsUser1     Match[]              @relation("UserMatches")
@@ -36,15 +38,15 @@ model User {
 }
 
 model Pet {
-  pet_id  Int                @id @default(autoincrement())
-  user_id Int
-  petname String?
-  gender  Gender?
-  age     Int?
-  size    Size?
-  rating  Float?
-  breeds  PetBreedRelation[]
-  user    User               @relation(fields: [user_id], references: [user_id])
+  pet_id   Int     @id @default(autoincrement())
+  user_id  Int
+  petname  String?
+  gender   Gender?
+  age      Int?
+  size     Size?
+  rating   Float?
+  breed_id Int?
+  user     User    @relation(fields: [user_id], references: [user_id])
 }
 
 model Event {
@@ -54,8 +56,8 @@ model Event {
   description String?
   eventDate   DateTime?
   status      Boolean?
-  createdAt   DateTime? @default(now())
-  updatedAt   DateTime? @updatedAt
+  createdAt   DateTime?            @default(now())
+  updatedAt   DateTime?            @updatedAt
   owner       User                 @relation("OwnerEvents", fields: [owner_id], references: [user_id])
   enrollments Event_UserEnrolled[]
 }
@@ -74,8 +76,8 @@ model Match {
   match_id   Int             @id @default(autoincrement())
   user_id1   Int
   user_id2   Int
-  createdAt  DateTime? @default(now())
-  updatedAt  DateTime? @updatedAt
+  createdAt  DateTime?       @default(now())
+  updatedAt  DateTime?       @updatedAt
   userCreate User            @relation("UserMatches", fields: [user_id1], references: [user_id])
   // user2     User            @relation("User2Matches", fields: [user_id2], references: [user_id])
   messages   Match_Message[]
@@ -88,7 +90,7 @@ model Match_Message {
   receiver_id Int
   types       MessageType?
   message     String?
-  createdAt   DateTime? @default(now())
+  createdAt   DateTime?    @default(now())
   match       Match        @relation(fields: [match_id], references: [match_id])
 }
 
@@ -144,22 +146,21 @@ model Pet_Breed {
   watchdog         Int
   adaptability     Int
   energyLevel      Int
-  pets             PetBreedRelation[]
   personalities    PersonalityRelation[] // Relation to personality traits
 
   @@map("Pet_Breed")
 }
 
-model PetBreedRelation {
-  pet_id   Int
-  breed_id Int
+// model PetBreedRelation {
+//   pet_id   Int
+//   breed_id Int
 
-  pet   Pet       @relation(fields: [pet_id], references: [pet_id], onDelete: Cascade)
-  breed Pet_Breed @relation(fields: [breed_id], references: [breed_id], onDelete: Cascade)
+//   pet   Pet       @relation(fields: [pet_id], references: [pet_id], onDelete: Cascade)
+//   breed Pet_Breed @relation(fields: [breed_id], references: [breed_id], onDelete: Cascade)
 
-  @@id([pet_id, breed_id])
-  @@map("Pet_Breed_Relation")
-}
+//   @@id([pet_id, breed_id])
+//   @@map("Pet_Breed_Relation")
+// }
 
 model Personality {
   personality_id   Int                   @id @default(autoincrement())

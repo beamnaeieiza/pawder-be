@@ -1,6 +1,5 @@
 import { Router } from "express";
 import {
-
   getUsers,
   getUserById,
   updateUser,
@@ -17,7 +16,7 @@ router.post(`${routeType}/signUp`, signUp);
 router.post(`${routeType}/login`, login);
 router.get("/users", getUsers);
 router.get("/users/getInfo", authMiddleware, getUserById);
-router.put("/users/:id", updateUser);
+router.put("/users/update", authMiddleware, updateUser);
 router.delete("/users/:id", deleteUser);
 
 export default router;

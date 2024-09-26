@@ -9,16 +9,9 @@ const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
 export const signUp = async (req: Request, res: Response) => {
-  const {
-    email,
-    username,
-    password,
-    phone_number,
-    firstname,
-    lastname,
-  } = req.body;
+  const { email, username, password, phone_number, firstname, lastname } =
+    req.body;
   try {
-
     const existingUser = await prisma.user.findFirst({
       where: { email: email },
     });
@@ -60,12 +53,15 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid password" });
     }
 
-    const token = jwt.sign({ userId: existingUser.user_id, username: existingUser.username }, JWT_SECRET, {
-      expiresIn: "1h",
-    });
+    const token = jwt.sign(
+      { userId: existingUser.user_id, username: existingUser.username },
+      JWT_SECRET,
+      {
+        expiresIn: "1h",
+      }
+    );
 
-
-    res.status(200).json({"token" : token});
+    res.status(200).json({ token: token });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Failed to login" });
@@ -100,27 +96,39 @@ export const getUserById = async (req: Request, res: Response) => {
 
 // Update a user by ID
 export const updateUser = async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const {
-    email,
-    username,
-    password,
-    phone_number,
-    profile_url,
-    firstname,
-    lastname,
-  } = req.body;
+  const id = (req as any).user.userId;
+  const { firstname, lastname, email, gender, birthdate } = req.body;
   try {
     const user = await prisma.user.update({
       where: { user_id: parseInt(id) },
       data: {
-        email,
-        username,
-        password,
-        phone_number,
-        profile_url,
         firstname,
         lastname,
+        email,
+        gender,
+        birthdate,
+      },
+    });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update user" });
+  }
+};
+
+// Create pet Profile
+export const createPet = async (req: Request, res: Response) => {
+  const id = (req as any).user.userId;
+  const { petname, e } = req.body;
+  try {
+    const user = await prisma.user.update({
+      where: { user_id: parseInt(id) },
+      data: {
+        pets: {
+          create: {
+            petname,
+            breeds: {},
+          },
+        },
       },
     });
     res.json(user);

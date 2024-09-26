@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.updateUser = exports.getUserById = exports.getUsers = exports.login = exports.signUp = void 0;
+exports.deleteUser = exports.createPet = exports.updateUser = exports.getUserById = exports.getUsers = exports.login = exports.signUp = void 0;
 const client_1 = require("@prisma/client");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -20,7 +20,7 @@ dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET;
 const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, username, password, phone_number, firstname, lastname, } = req.body;
+    const { email, username, password, phone_number, firstname, lastname } = req.body;
     try {
         const existingUser = yield prisma.user.findFirst({
             where: { email: email },
@@ -62,7 +62,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const token = jsonwebtoken_1.default.sign({ userId: existingUser.user_id, username: existingUser.username }, JWT_SECRET, {
             expiresIn: "1h",
         });
-        res.status(200).json({ "token": token });
+        res.status(200).json({ token: token });
     }
     catch (error) {
         console.log(error);
@@ -100,19 +100,17 @@ const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.getUserById = getUserById;
 // Update a user by ID
 const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { id } = req.params;
-    const { email, username, password, phone_number, profile_url, firstname, lastname, } = req.body;
+    const id = req.user.userId;
+    const { firstname, lastname, email, gender, birthdate } = req.body;
     try {
         const user = yield prisma.user.update({
             where: { user_id: parseInt(id) },
             data: {
-                email,
-                username,
-                password,
-                phone_number,
-                profile_url,
                 firstname,
                 lastname,
+                email,
+                gender,
+                birthdate,
             },
         });
         res.json(user);
@@ -122,6 +120,29 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.updateUser = updateUser;
+// Create pet Profile
+const createPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    const { petname, e } = req.body;
+    try {
+        const user = yield prisma.user.update({
+            where: { user_id: parseInt(id) },
+            data: {
+                pets: {
+                    create: {
+                        petname,
+                        breeds: {},
+                    },
+                },
+            },
+        });
+        res.json(user);
+    }
+    catch (error) {
+        res.status(500).json({ error: "Failed to update user" });
+    }
+});
+exports.createPet = createPet;
 // Delete a user by ID
 const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
