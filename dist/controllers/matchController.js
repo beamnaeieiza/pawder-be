@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserNotInterests = exports.getUserInterests = exports.notLikePet = exports.likePet = exports.randomPet = void 0;
+exports.getUserSaved = exports.getUserNotInterests = exports.getUserInterests = exports.savePet = exports.notLikePet = exports.likePet = exports.randomPet = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
@@ -82,13 +82,38 @@ const likePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (existingLike) {
             return res.status(409).json({ error: "You have already liked this user." });
         }
-        const newLike = yield prisma.user_Interest.create({
-            data: {
-                user_id: userId,
-                target_user_id: target_user_id,
+        const likeToMatch = yield prisma.user_Interest.findUnique({
+            where: {
+                user_id_target_user_id: {
+                    user_id: target_user_id,
+                    target_user_id: userId,
+                },
             },
         });
-        res.status(201).json(newLike);
+        if (likeToMatch) {
+            const newLike = yield prisma.user_Interest.create({
+                data: {
+                    user_id: userId,
+                    target_user_id: target_user_id,
+                },
+            });
+            const newMatch = yield prisma.match.create({
+                data: {
+                    user_id1: userId,
+                    user_id2: target_user_id,
+                },
+            });
+            res.status(201).json(newMatch);
+        }
+        else {
+            const newLike = yield prisma.user_Interest.create({
+                data: {
+                    user_id: userId,
+                    target_user_id: target_user_id,
+                },
+            });
+            res.status(201).json(newLike);
+        }
     }
     catch (error) {
         console.error(error);
@@ -128,6 +153,38 @@ const notLikePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.notLikePet = notLikePet;
+const savePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.user.userId;
+    const { saved_user_id } = req.body;
+    if (!saved_user_id) {
+        return res.status(400).json({ error: "Target User ID is required." });
+    }
+    try {
+        const existingSaved = yield prisma.user_Saved.findUnique({
+            where: {
+                user_id_saved_user_id: {
+                    user_id: userId,
+                    saved_user_id: saved_user_id,
+                },
+            },
+        });
+        if (existingSaved) {
+            return res.status(409).json({ error: "You have already saved this user." });
+        }
+        const newSave = yield prisma.user_Saved.create({
+            data: {
+                user_id: userId,
+                saved_user_id: saved_user_id,
+            },
+        });
+        res.status(201).json(newSave);
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to save user." });
+    }
+});
+exports.savePet = savePet;
 const getUserInterests = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.userId;
     try {
@@ -168,3 +225,23 @@ const getUserNotInterests = (req, res) => __awaiter(void 0, void 0, void 0, func
     }
 });
 exports.getUserNotInterests = getUserNotInterests;
+const getUserSaved = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const userId = req.user.userId;
+    try {
+        const userSaved = yield prisma.user_Saved.findMany({
+            where: { user_id: userId },
+            include: {
+                user: true, // Include user details (optional)
+            },
+        });
+        if (userSaved.length === 0) {
+            return res.status(404).json({ message: "No saved found for this user." });
+        }
+        res.json(userSaved);
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to retrieve user saved information." });
+    }
+});
+exports.getUserSaved = getUserSaved;

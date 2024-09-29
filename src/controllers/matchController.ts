@@ -77,6 +77,33 @@ export const likePet = async (req: Request, res: Response) => {
       if (existingLike) {
         return res.status(409).json({ error: "You have already liked this user." });
       }
+
+      const likeToMatch = await prisma.user_Interest.findUnique({
+        where: {
+          user_id_target_user_id: {
+            user_id: target_user_id,
+            target_user_id: userId,
+          },
+        },
+      });
+
+      if (likeToMatch) {
+        const newLike = await prisma.user_Interest.create({
+          data: {
+            user_id: userId,
+            target_user_id: target_user_id,
+          },
+        });
+        const newMatch = await prisma.match.create({
+          data: {
+            user_id1: userId,
+            user_id2: target_user_id,
+          },
+        });
+        res.status(201).json(newMatch);
+      }
+
+      else {
       const newLike = await prisma.user_Interest.create({
         data: {
           user_id: userId,
@@ -85,6 +112,7 @@ export const likePet = async (req: Request, res: Response) => {
       });
   
       res.status(201).json(newLike);
+    }
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Failed to like user." });
@@ -122,6 +150,41 @@ export const likePet = async (req: Request, res: Response) => {
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Failed to dislike user." });
+    }
+  };
+
+
+  export const savePet = async (req: Request, res: Response) => {
+    const userId = (req as any).user.userId;
+    const { saved_user_id } = req.body; 
+  
+    if (!saved_user_id) {
+      return res.status(400).json({ error: "Target User ID is required." });
+    }
+  
+    try {
+      const existingSaved = await prisma.user_Saved.findUnique({
+        where: {
+          user_id_saved_user_id: {
+            user_id: userId,
+            saved_user_id: saved_user_id,
+          },
+        },
+      });
+      if (existingSaved) {
+        return res.status(409).json({ error: "You have already saved this user." });
+      }
+      const newSave = await prisma.user_Saved.create({
+        data: {
+          user_id: userId,
+          saved_user_id: saved_user_id,
+        },
+      });
+  
+      res.status(201).json(newSave);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to save user." });
     }
   };
 
@@ -168,6 +231,29 @@ export const likePet = async (req: Request, res: Response) => {
     } catch (error) {
       console.error(error);
       res.status(500).json({ error: "Failed to retrieve user not interests." });
+    }
+  };
+
+
+  export const getUserSaved = async (req: Request, res: Response) => {
+    const userId = (req as any).user.userId;
+  
+    try {
+      const userSaved = await prisma.user_Saved.findMany({
+        where: { user_id: userId },
+        include: {
+          user: true, // Include user details (optional)
+        },
+      });
+  
+      if (userSaved.length === 0) {
+        return res.status(404).json({ message: "No saved found for this user." });
+      }
+  
+      res.json(userSaved);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Failed to retrieve user saved information." });
     }
   };
   
