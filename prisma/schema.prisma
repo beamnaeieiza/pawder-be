@@ -1,0 +1,233 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id            Int                  @id @default(autoincrement())
+  token              String?
+  email              String?
+  username           String?
+  password           String?
+  phone_number       String?
+  profile_url        String?
+  firstname          String?
+  lastname           String?
+  verify_status      Boolean?
+  subscription       Subscription?
+  location_latitude  String?
+  location_longitude String?
+  createdAt          DateTime?            @default(now())
+  updatedAt          DateTime?            @updatedAt
+  gender             String?
+  birthdate          DateTime?
+  events_owned       Event[]              @relation("OwnerEvents")
+  events_enrolled    Event_UserEnrolled[]
+  matchesAsUser1     Match[]              @relation("UserMatches")
+  matchesAsUser2     Match[]              @relation("UserMatches2")
+  chatAsUser1     Chat[]              @relation("UserChat")
+  chatAsUser2     Chat[]              @relation("UserChat2")
+  notifications      Notification[]
+  pets               Pet[]
+  user_dislike       User_Dislike[]
+  user_haveMet       User_HaveMet[]
+  user_interest      User_Interest[]
+  user_saved         User_Saved[]
+}
+
+model Pet {
+  pet_id             Int                  @id @default(autoincrement())
+  user_id            Int
+  breed_id          Int?
+  pet_url            String?
+  petname            String?
+  pet_description    String?
+  gender             Gender?
+  age                Int?
+  size               Size?
+  rating             Float?
+  user               User                 @relation(fields: [user_id], references: [user_id])
+  breed     Pet_Breed? @relation(fields: [breed_id], references: [breed_id]) 
+  // Pet_Breed_Relation Pet_Breed_Relation[]
+
+  @@index([user_id], map: "Pet_user_id_fkey")
+}
+
+model Event {
+  event_id    Int                  @id @default(autoincrement())
+  owner_id    Int
+  eventTitle  String?
+  description String?
+  event_url   String?
+  eventDate   DateTime?
+  status      Boolean?
+  createdAt   DateTime?            @default(now())
+  updatedAt   DateTime?            @updatedAt
+  owner       User                 @relation("OwnerEvents", fields: [owner_id], references: [user_id])
+  enrollments Event_UserEnrolled[]
+
+  @@index([owner_id], map: "Event_owner_id_fkey")
+}
+
+model Notification {
+  notification_id Int       @id @default(autoincrement())
+  user_id         Int
+  title           String?
+  message         String?
+  createdAt       DateTime? @default(now())
+  updatedAt       DateTime? @updatedAt
+  user            User      @relation(fields: [user_id], references: [user_id])
+
+  @@index([user_id], map: "Notification_user_id_fkey")
+}
+
+model Match {
+  match_id   Int             @id @default(autoincrement())
+  user_id1   Int
+  user_id2   Int
+  createdAt  DateTime?       @default(now())
+  updatedAt  DateTime?       @updatedAt
+  user1 User            @relation("UserMatches", fields: [user_id1], references: [user_id])
+  user2 User            @relation("UserMatches2", fields: [user_id2], references: [user_id])
+
+
+  @@index([user_id1], map: "Match_user_id1_fkey")
+}
+model Chat {
+  chat_id   Int             @id @default(autoincrement())
+  user_id1   Int
+  user_id2   Int
+  createdAt  DateTime?       @default(now())
+  updatedAt  DateTime?       @updatedAt
+  user1 User            @relation("UserChat", fields: [user_id1], references: [user_id])
+  user2 User            @relation("UserChat2", fields: [user_id2], references: [user_id])
+  messages   Chat_Message[]
+
+  // @@index([user_id1], map: "Chat_user_id1_fkey")
+}
+model Chat_Message {
+  message_id  Int          @id @default(autoincrement())
+  chat_id    Int
+  sender_id   Int
+  receiver_id Int
+  types       MessageType?
+  message     String?
+  createdAt   DateTime?    @default(now())
+  match       Chat        @relation(fields: [chat_id], references: [chat_id])
+
+  @@index([chat_id], map: "Chat_Message_chat_id_fkey")
+}
+
+model User_Saved {
+  user_id       Int
+  saved_user_id Int
+  user          User @relation(fields: [saved_user_id], references: [user_id])
+
+  @@id([user_id, saved_user_id])
+}
+
+model User_Dislike {
+  user_id         Int
+  dislike_user_id Int
+  user            User @relation(fields: [dislike_user_id], references: [user_id])
+
+  @@id([user_id, dislike_user_id])
+}
+
+model User_HaveMet {
+  user_id     Int
+  met_user_id Int
+  user        User @relation(fields: [met_user_id], references: [user_id])
+
+  @@id([user_id, met_user_id])
+}
+
+model User_Interest {
+  user_id   Int
+  target_user_id Int
+  user      User @relation(fields: [target_user_id], references: [user_id])
+
+  @@id([user_id, target_user_id])
+}
+
+model Event_UserEnrolled {
+  enroll_id Int   @id @default(autoincrement())
+  event_id  Int
+  user_id   Int
+  event     Event @relation(fields: [event_id], references: [event_id])
+  user      User  @relation(fields: [user_id], references: [user_id])
+
+  @@index([event_id], map: "Event_UserEnrolled_event_id_fkey")
+  @@index([user_id], map: "Event_UserEnrolled_user_id_fkey")
+}
+
+model Pet_Breed {
+  breed_id           Int                   @id @default(autoincrement())
+  breedName          String
+  group              String
+  heightInches       String
+  weightPounds       String
+  personality        String
+  goodWithDogs       Int
+  playfulnessLevel   Int
+  watchdog           Int
+  adaptability       Int
+  energyLevel        Int
+  pets               Pet[]               
+  // Pet_Breed_Relation Pet_Breed_Relation[]
+
+  @@map("Pet_Breed")
+}
+
+// model Personality {
+//   personality_id   Int                   @id @default(autoincrement())
+//   trait            String
+//   breedPersonality PersonalityRelation[]
+// }
+
+// model PersonalityRelation {
+//   breed_id       Int
+//   personality_id Int
+//   breed          Pet_Breed   @relation(fields: [breed_id], references: [breed_id], onDelete: Cascade)
+//   personality    Personality @relation(fields: [personality_id], references: [personality_id], onDelete: Cascade)
+
+//   @@id([breed_id, personality_id])
+//   @@index([personality_id], map: "Personality_Relation_personality_id_fkey")
+//   @@map("Personality_Relation")
+// }
+
+// model Pet_Breed_Relation {
+//   pet_id    Int
+//   breed_id  Int
+//   Pet_Breed Pet_Breed @relation(fields: [breed_id], references: [breed_id], onDelete: Cascade)
+//   Pet       Pet       @relation(fields: [pet_id], references: [pet_id], onDelete: Cascade)
+
+//   @@id([pet_id, breed_id])
+//   @@index([breed_id], map: "Pet_Breed_Relation_breed_id_fkey")
+// }
+
+enum Gender {
+  MALE
+  FEMALE
+}
+
+enum Size {
+  SMALL
+  MEDIUM
+  LARGE
+}
+
+enum Subscription {
+  FREE
+  PREMIUM
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  VIDEO
+}
