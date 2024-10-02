@@ -20,7 +20,7 @@ dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET;
 const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, username, password, phone_number, firstname, lastname } = req.body;
+    const { email, username, password, phone_number, firstname, lastname, gender } = req.body;
     try {
         const existingUser = yield prisma.user.findFirst({
             where: { email: email },
@@ -33,6 +33,7 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 email,
                 username,
                 password,
+                gender,
                 phone_number,
                 firstname,
                 lastname,

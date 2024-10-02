@@ -9,7 +9,7 @@ const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
 export const signUp = async (req: Request, res: Response) => {
-  const { email, username, password, phone_number, firstname, lastname } =
+  const { email, username, password, phone_number, firstname, lastname, gender } =
     req.body;
   try {
     const existingUser = await prisma.user.findFirst({
@@ -25,6 +25,7 @@ export const signUp = async (req: Request, res: Response) => {
         email,
         username,
         password,
+        gender,
         phone_number,
         firstname,
         lastname,

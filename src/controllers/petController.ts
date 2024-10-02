@@ -22,3 +22,18 @@ export const getPetList = async (req: Request, res: Response) => {
   }
 };
 
+export const getBreedList = async (req: Request, res: Response) => {
+  const id = (req as any).user.userId;
+  try {
+    const pet = await prisma.pet_Breed.findMany({
+      select: {
+        breed_id: true,
+        breedName: true
+      }
+  });
+    res.json(pet);
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: "Failed to get breed list" });
+  }
+};

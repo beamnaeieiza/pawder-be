@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getPetList = void 0;
+exports.getBreedList = exports.getPetList = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
@@ -33,3 +33,20 @@ const getPetList = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.getPetList = getPetList;
+const getBreedList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    try {
+        const pet = yield prisma.pet_Breed.findMany({
+            select: {
+                breed_id: true,
+                breedName: true
+            }
+        });
+        res.json(pet);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to get breed list" });
+    }
+});
+exports.getBreedList = getBreedList;
