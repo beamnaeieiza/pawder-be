@@ -77,7 +77,8 @@ export const getChatList = async (req: Request, res: Response) => {
 
 export const createChat = async (req: Request, res: Response) => {
     const id = (req as any).user.userId;
-    const { chat_user_id } = req.body;
+    let { chat_user_id } = req.body;
+    chat_user_id = parseInt(chat_user_id);
     try {
    
         const chat = await prisma.chat.create({
@@ -98,7 +99,9 @@ export const createChat = async (req: Request, res: Response) => {
 
 export const sendChatMessage = async (req: Request, res: Response) => {
     const id = (req as any).user.userId;
-    const { chat_id, receiver_id, types, message } = req.body;
+    let { chat_id, receiver_id, types, message } = req.body;
+    chat_id = parseInt(chat_id);
+    receiver_id = parseInt(receiver_id);
     try {
         const existingChat = await prisma.chat.findUnique({
             where: { chat_id: chat_id }
@@ -131,7 +134,8 @@ export const sendChatMessage = async (req: Request, res: Response) => {
 
 export const getChatMessage = async (req: Request, res: Response) => {
     const id = (req as any).user.userId;
-    const { chat_id } = req.body;
+    let { chat_id } = req.body;
+    chat_id = parseInt(chat_id);
     try {
       const existingChat = await prisma.chat.findUnique({
         where: { chat_id: chat_id },

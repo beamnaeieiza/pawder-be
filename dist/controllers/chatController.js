@@ -96,7 +96,8 @@ const getChatList = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.getChatList = getChatList;
 const createChat = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
-    const { chat_user_id } = req.body;
+    let { chat_user_id } = req.body;
+    chat_user_id = parseInt(chat_user_id);
     try {
         const chat = yield prisma.chat.create({
             data: {
@@ -114,7 +115,9 @@ const createChat = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.createChat = createChat;
 const sendChatMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
-    const { chat_id, receiver_id, types, message } = req.body;
+    let { chat_id, receiver_id, types, message } = req.body;
+    chat_id = parseInt(chat_id);
+    receiver_id = parseInt(receiver_id);
     try {
         const existingChat = yield prisma.chat.findUnique({
             where: { chat_id: chat_id }
@@ -145,7 +148,8 @@ const sendChatMessage = (req, res) => __awaiter(void 0, void 0, void 0, function
 exports.sendChatMessage = sendChatMessage;
 const getChatMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
-    const { chat_id } = req.body;
+    let { chat_id } = req.body;
+    chat_id = parseInt(chat_id);
     try {
         const existingChat = yield prisma.chat.findUnique({
             where: { chat_id: chat_id },

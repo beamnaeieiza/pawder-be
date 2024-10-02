@@ -40,7 +40,7 @@ export const randomPet = async (req: Request, res: Response) => {
         },
       },
       skip: randomIndex,
-      take: 1,
+      take: 10,
       include: {
         user: true,
       }
@@ -50,7 +50,7 @@ export const randomPet = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "No pet found." });
     }
 
-    res.json(randomPet[0]);
+    res.json(randomPet);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to retrieve random pet." });
@@ -59,7 +59,8 @@ export const randomPet = async (req: Request, res: Response) => {
 
 export const likePet = async (req: Request, res: Response) => {
     const userId = (req as any).user.userId;
-    const { target_user_id } = req.body; 
+    let { target_user_id } = req.body; 
+    target_user_id = parseInt(target_user_id);
   
     if (!target_user_id) {
       return res.status(400).json({ error: "Target User ID is required." });
@@ -94,6 +95,12 @@ export const likePet = async (req: Request, res: Response) => {
             target_user_id: target_user_id,
           },
         });
+        const newMet = await prisma.user_HaveMet.create({
+          data: {
+            user_id: userId,
+            met_user_id: target_user_id,
+          },
+        });
         const newMatch = await prisma.match.create({
           data: {
             user_id1: userId,
@@ -121,7 +128,8 @@ export const likePet = async (req: Request, res: Response) => {
 
   export const notLikePet = async (req: Request, res: Response) => {
     const userId = (req as any).user.userId;
-    const { dislike_user_id } = req.body; 
+    let { dislike_user_id } = req.body; 
+    dislike_user_id = parseInt(dislike_user_id);
   
     if (!dislike_user_id) {
       return res.status(400).json({ error: "Target User ID is required." });
@@ -139,6 +147,12 @@ export const likePet = async (req: Request, res: Response) => {
       if (existingDislike) {
         return res.status(409).json({ error: "You have already disliked this user." });
       }
+      const newMet = await prisma.user_HaveMet.create({
+        data: {
+          user_id: userId,
+          met_user_id: dislike_user_id,
+        },
+      });
       const newDislike = await prisma.user_Dislike.create({
         data: {
           user_id: userId,
@@ -156,7 +170,8 @@ export const likePet = async (req: Request, res: Response) => {
 
   export const savePet = async (req: Request, res: Response) => {
     const userId = (req as any).user.userId;
-    const { saved_user_id } = req.body; 
+    let { saved_user_id } = req.body; 
+    saved_user_id = parseInt(saved_user_id);
   
     if (!saved_user_id) {
       return res.status(400).json({ error: "Target User ID is required." });
@@ -174,6 +189,12 @@ export const likePet = async (req: Request, res: Response) => {
       if (existingSaved) {
         return res.status(409).json({ error: "You have already saved this user." });
       }
+      const newMet = await prisma.user_HaveMet.create({
+        data: {
+          user_id: userId,
+          met_user_id: saved_user_id,
+        },
+      });
       const newSave = await prisma.user_Saved.create({
         data: {
           user_id: userId,

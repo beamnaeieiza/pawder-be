@@ -131,12 +131,12 @@ const createPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             data: {
                 pets: {
                     create: {
-                        breed_id,
+                        breed_id: parseInt(breed_id),
                         petname,
                         pet_description,
                         pet_url,
                         gender,
-                        age
+                        age: parseInt(age)
                     },
                 },
             },

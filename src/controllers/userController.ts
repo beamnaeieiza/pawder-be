@@ -100,6 +100,7 @@ export const updateUser = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
   const { firstname, lastname, email,gender, birthdate } = req.body;
   try {
+    
     const user = await prisma.user.update({
       where: { user_id: parseInt(id) },
       data: {
@@ -126,12 +127,12 @@ export const createPet = async (req: Request, res: Response) => {
       data: {
         pets: {
           create: {
-            breed_id,
+            breed_id: parseInt(breed_id),
             petname,
             pet_description,
             pet_url,
             gender,
-            age
+            age : parseInt(age)
 
         },
       },

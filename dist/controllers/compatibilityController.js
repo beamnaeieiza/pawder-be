@@ -75,7 +75,8 @@ function calculateCompatibility(breed1Data, breed2Data) {
 }
 // API endpoint to get compatibility score between a target pet and all pets owned by a user
 const getPetCompatibility = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { targetPetId } = req.body; // Expect target pet ID in the request body
+    let { targetPetId } = req.body; // Expect target pet ID in the request body
+    targetPetId = parseInt(targetPetId); // Convert target pet ID to number
     const userId = req.user.userId; // Extract user ID from the request (assuming user info is stored in the request)
     try {
         // Fetch the target pet's breed information

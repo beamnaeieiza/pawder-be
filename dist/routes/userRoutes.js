@@ -5,9 +5,12 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const userController_1 = require("../controllers/userController");
+const imageController_1 = require("../controllers/imageController");
 const authMiddleware_1 = __importDefault(require("../middlewares/authMiddleware"));
+const multer_1 = __importDefault(require("multer"));
 const router = (0, express_1.Router)();
 const routeType = "/users";
+const upload = (0, multer_1.default)({ storage: multer_1.default.memoryStorage() });
 router.post(`${routeType}/signUp`, userController_1.signUp);
 router.post(`${routeType}/login`, userController_1.login);
 router.get("/users", userController_1.getUsers);
@@ -16,4 +19,5 @@ router.put("/users/update", authMiddleware_1.default, userController_1.updateUse
 router.post(`${routeType}/createPet`, authMiddleware_1.default, userController_1.createPet);
 router.get(`${routeType}/getPet`, authMiddleware_1.default, userController_1.getPetList);
 router.delete("/users/:id", userController_1.deleteUser);
+router.post("/users/uploadProfileImage", upload.single('file'), authMiddleware_1.default, imageController_1.uploadProfileImage);
 exports.default = router;

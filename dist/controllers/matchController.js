@@ -48,7 +48,7 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 },
             },
             skip: randomIndex,
-            take: 1,
+            take: 10,
             include: {
                 user: true,
             }
@@ -56,7 +56,7 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (randomPet.length === 0) {
             return res.status(404).json({ error: "No pet found." });
         }
-        res.json(randomPet[0]);
+        res.json(randomPet);
     }
     catch (error) {
         console.error(error);
@@ -66,7 +66,8 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.randomPet = randomPet;
 const likePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.userId;
-    const { target_user_id } = req.body;
+    let { target_user_id } = req.body;
+    target_user_id = parseInt(target_user_id);
     if (!target_user_id) {
         return res.status(400).json({ error: "Target User ID is required." });
     }
@@ -97,6 +98,12 @@ const likePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     target_user_id: target_user_id,
                 },
             });
+            const newMet = yield prisma.user_HaveMet.create({
+                data: {
+                    user_id: userId,
+                    met_user_id: target_user_id,
+                },
+            });
             const newMatch = yield prisma.match.create({
                 data: {
                     user_id1: userId,
@@ -123,7 +130,8 @@ const likePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.likePet = likePet;
 const notLikePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.userId;
-    const { dislike_user_id } = req.body;
+    let { dislike_user_id } = req.body;
+    dislike_user_id = parseInt(dislike_user_id);
     if (!dislike_user_id) {
         return res.status(400).json({ error: "Target User ID is required." });
     }
@@ -139,6 +147,12 @@ const notLikePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         if (existingDislike) {
             return res.status(409).json({ error: "You have already disliked this user." });
         }
+        const newMet = yield prisma.user_HaveMet.create({
+            data: {
+                user_id: userId,
+                met_user_id: dislike_user_id,
+            },
+        });
         const newDislike = yield prisma.user_Dislike.create({
             data: {
                 user_id: userId,
@@ -155,7 +169,8 @@ const notLikePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
 exports.notLikePet = notLikePet;
 const savePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.userId;
-    const { saved_user_id } = req.body;
+    let { saved_user_id } = req.body;
+    saved_user_id = parseInt(saved_user_id);
     if (!saved_user_id) {
         return res.status(400).json({ error: "Target User ID is required." });
     }
@@ -171,6 +186,12 @@ const savePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         if (existingSaved) {
             return res.status(409).json({ error: "You have already saved this user." });
         }
+        const newMet = yield prisma.user_HaveMet.create({
+            data: {
+                user_id: userId,
+                met_user_id: saved_user_id,
+            },
+        });
         const newSave = yield prisma.user_Saved.create({
             data: {
                 user_id: userId,

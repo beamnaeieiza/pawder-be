@@ -36,7 +36,8 @@ const getEventList = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.getEventList = getEventList;
 const getEventInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
-    const { event_id } = req.body;
+    let { event_id } = req.body;
+    event_id = parseInt(event_id);
     try {
         const eventInfo = yield prisma.event.findFirst({
             where: {
@@ -56,7 +57,8 @@ const getEventInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.getEventInfo = getEventInfo;
 const getEnrollList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
-    const { event_id } = req.body;
+    let { event_id } = req.body;
+    event_id = parseInt(event_id);
     try {
         const eventInfo = yield prisma.event.findFirst({
             where: {
@@ -107,7 +109,8 @@ const createEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.createEvent = createEvent;
 const enrollEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
-    const { event_id } = req.body;
+    let { event_id } = req.body;
+    event_id = parseInt(event_id);
     try {
         const existingEvent = yield prisma.event.findUnique({
             where: { event_id: event_id }
@@ -135,7 +138,8 @@ const enrollEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.enrollEvent = enrollEvent;
 const editEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
-    const { event_id, eventTitle, description, eventDate, event_url } = req.body;
+    let { event_id, eventTitle, description, eventDate, event_url } = req.body;
+    event_id = parseInt(event_id);
     try {
         const existingEvent = yield prisma.event.findUnique({
             where: { event_id: event_id }
