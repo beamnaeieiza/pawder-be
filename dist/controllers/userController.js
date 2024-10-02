@@ -124,7 +124,9 @@ exports.updateUser = updateUser;
 //Create pet Profile
 const createPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
-    const { breed_id, petname, pet_url, gender, age, pet_description } = req.body;
+    let { breed_id, petname, pet_url, gender, age, pet_description } = req.body;
+    breed_id = parseInt(breed_id);
+    age = parseInt(age);
     try {
         const user = yield prisma.user.update({
             where: { user_id: parseInt(id) },
