@@ -29,7 +29,7 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const totalCount = yield prisma.pet.count({
             where: {
                 NOT: {
-                    pet_id: {
+                    user_id: {
                         in: metPetIds,
                     },
                 },
@@ -42,8 +42,8 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const randomPet = yield prisma.pet.findMany({
             where: {
                 NOT: {
-                    pet_id: {
-                        in: metPetIds,
+                    user_id: {
+                        in: [...metPetIds, id],
                     },
                 },
             },
@@ -212,7 +212,26 @@ const getUserInterests = (req, res) => __awaiter(void 0, void 0, void 0, functio
         const userInterests = yield prisma.user_Interest.findMany({
             where: { user_id: userId },
             include: {
-                user: true, // Include user details (optional)
+                user: {
+                    select: {
+                        username: true,
+                        firstname: true,
+                        email: true,
+                        birthdate: true,
+                        pets: {
+                            select: {
+                                petname: true,
+                                pet_url: true,
+                                gender: true,
+                                breed: {
+                                    select: {
+                                        breedName: true,
+                                    },
+                                },
+                            },
+                        }
+                    },
+                }
             },
         });
         if (userInterests.length === 0) {
@@ -232,7 +251,26 @@ const getUserNotInterests = (req, res) => __awaiter(void 0, void 0, void 0, func
         const userNotInterests = yield prisma.user_Dislike.findMany({
             where: { user_id: userId },
             include: {
-                user: true, // Include user details (optional)
+                user: {
+                    select: {
+                        username: true,
+                        firstname: true,
+                        email: true,
+                        birthdate: true,
+                        pets: {
+                            select: {
+                                petname: true,
+                                pet_url: true,
+                                gender: true,
+                                breed: {
+                                    select: {
+                                        breedName: true,
+                                    },
+                                },
+                            },
+                        }
+                    },
+                }
             },
         });
         if (userNotInterests.length === 0) {
@@ -252,7 +290,26 @@ const getUserSaved = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         const userSaved = yield prisma.user_Saved.findMany({
             where: { user_id: userId },
             include: {
-                user: true, // Include user details (optional)
+                user: {
+                    select: {
+                        username: true,
+                        firstname: true,
+                        email: true,
+                        birthdate: true,
+                        pets: {
+                            select: {
+                                petname: true,
+                                pet_url: true,
+                                gender: true,
+                                breed: {
+                                    select: {
+                                        breedName: true,
+                                    },
+                                },
+                            },
+                        }
+                    },
+                }
             },
         });
         if (userSaved.length === 0) {

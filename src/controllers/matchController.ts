@@ -21,7 +21,7 @@ export const randomPet = async (req: Request, res: Response) => {
     const totalCount = await prisma.pet.count({
       where: {
         NOT: {
-          pet_id: {
+          user_id: {
             in: metPetIds,
           },
         },
@@ -34,8 +34,8 @@ export const randomPet = async (req: Request, res: Response) => {
     const randomPet = await prisma.pet.findMany({
       where: {
         NOT: {
-          pet_id: {
-            in: metPetIds,
+          user_id: {
+            in: [...metPetIds, id],
           },
         },
       },
@@ -218,7 +218,27 @@ export const likePet = async (req: Request, res: Response) => {
       const userInterests = await prisma.user_Interest.findMany({
         where: { user_id: userId },
         include: {
-          user: true, // Include user details (optional)
+          user: {
+            select: {
+              username: true,
+              firstname: true,
+              email: true,
+              birthdate: true,
+              pets: {
+                select: {
+                  petname: true,
+                  pet_url: true,
+                  gender: true,
+                  breed: {
+                    select: {
+                      breedName: true,
+                    },
+                  },
+              },
+            }
+          },
+        }
+    
         },
       });
   
@@ -240,7 +260,27 @@ export const likePet = async (req: Request, res: Response) => {
       const userNotInterests = await prisma.user_Dislike.findMany({
         where: { user_id: userId },
         include: {
-          user: true, // Include user details (optional)
+          user: {
+            select: {
+              username: true,
+              firstname: true,
+              email: true,
+              birthdate: true,
+              pets: {
+                select: {
+                  petname: true,
+                  pet_url: true,
+                  gender: true,
+                  breed: {
+                    select: {
+                      breedName: true,
+                    },
+                  },
+              },
+            }
+          },
+        }
+    
         },
       });
   
@@ -263,7 +303,27 @@ export const likePet = async (req: Request, res: Response) => {
       const userSaved = await prisma.user_Saved.findMany({
         where: { user_id: userId },
         include: {
-          user: true, // Include user details (optional)
+          user: {
+            select: {
+              username: true,
+              firstname: true,
+              email: true,
+              birthdate: true,
+              pets: {
+                select: {
+                  petname: true,
+                  pet_url: true,
+                  gender: true,
+                  breed: {
+                    select: {
+                      breedName: true,
+                    },
+                  },
+              },
+            }
+          },
+        }
+    
         },
       });
   
