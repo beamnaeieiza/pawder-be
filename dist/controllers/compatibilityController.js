@@ -75,13 +75,20 @@ function calculateCompatibility(breed1Data, breed2Data) {
 }
 // API endpoint to get compatibility score between a target pet and all pets owned by a user
 const getPetCompatibility = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    let { targetPetId } = req.body; // Expect target pet ID in the request body
-    targetPetId = parseInt(targetPetId); // Convert target pet ID to number
+    let { targetPetId } = req.query;
+    if (targetPetId) {
+        targetPetId = targetPetId.toString();
+    }
+    else {
+        return res.status(400).json({ error: "chat_id is required" });
+    }
+    // let { targetPetId } = req.body; // Expect target pet ID in the request body
+    // targetPetId = parseInt(targetPetId); // Convert target pet ID to number
     const userId = req.user.userId; // Extract user ID from the request (assuming user info is stored in the request)
     try {
         // Fetch the target pet's breed information
         const targetPet = yield prisma.pet.findUnique({
-            where: { pet_id: targetPetId },
+            where: { pet_id: parseInt(targetPetId) },
             include: { breed: true } // Assuming 'breed' relation is defined in Pet model
         });
         if (!targetPet) {

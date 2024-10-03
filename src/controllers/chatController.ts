@@ -134,11 +134,15 @@ export const sendChatMessage = async (req: Request, res: Response) => {
 
 export const getChatMessage = async (req: Request, res: Response) => {
     const id = (req as any).user.userId;
-    let { chat_id } = req.body;
-    chat_id = parseInt(chat_id);
+    let { chat_id } = req.query;
+    if (chat_id) {
+        chat_id = chat_id.toString();
+    } else {
+        return res.status(400).json({ error: "event_id is required" });
+    }
     try {
       const existingChat = await prisma.chat.findUnique({
-        where: { chat_id: chat_id },
+        where: { chat_id: parseInt(chat_id) },
         include: {
           messages: {
             orderBy: {
