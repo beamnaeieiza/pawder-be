@@ -127,7 +127,7 @@ const createPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
     let { breed_id, petname, pet_url, gender, age, pet_description } = req.body;
     breed_id = parseInt(breed_id);
-    age = parseInt(age);
+    age = parseFloat(age);
     try {
         const user = yield prisma.user.update({
             where: { user_id: parseInt(id) },
@@ -139,7 +139,7 @@ const createPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                         pet_description,
                         pet_url,
                         gender,
-                        age: parseInt(age)
+                        age: parseFloat(age)
                     },
                 },
             },

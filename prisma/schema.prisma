@@ -47,7 +47,7 @@ model Pet {
   petname            String?
   pet_description    String?
   gender             Gender?
-  age                Int?
+  age                Float?
   size               Size?
   rating             Float?
   user               User                 @relation(fields: [user_id], references: [user_id])
