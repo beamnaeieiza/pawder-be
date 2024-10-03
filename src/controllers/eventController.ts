@@ -26,12 +26,17 @@ export const getEventList = async (req: Request, res: Response) => {
 
 export const getEventInfo = async (req: Request, res: Response) => {
     const id = (req as any).user.userId;
-    let { event_id } = req.body;
-    event_id = parseInt(event_id);
+    let { event_id } = req.query;
+    if (event_id) {
+        event_id = event_id.toString();
+    } else {
+        return res.status(400).json({ error: "event_id is required" });
+    }
+    // event_id = parseInt(event_id);
     try {
         const eventInfo = await prisma.event.findFirst({
             where: {
-                event_id: event_id
+                event_id: parseInt(event_id)
             },
             include: {
                 owner: true,
@@ -46,12 +51,16 @@ export const getEventInfo = async (req: Request, res: Response) => {
 
 export const getEnrollList = async (req: Request, res: Response) => {
     const id = (req as any).user.userId;
-    let { event_id } = req.body;
-    event_id = parseInt(event_id);
+    let { event_id } = req.query;
+    if (event_id) {
+        event_id = event_id.toString();
+    } else {
+        return res.status(400).json({ error: "event_id is required" });
+    }
     try {
         const eventInfo = await prisma.event.findFirst({
             where: {
-                event_id: event_id
+                event_id: parseInt(event_id)
             },
             include: {
                 enrollments: {

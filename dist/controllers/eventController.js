@@ -36,12 +36,18 @@ const getEventList = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.getEventList = getEventList;
 const getEventInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
-    let { event_id } = req.body;
-    event_id = parseInt(event_id);
+    let { event_id } = req.query;
+    if (event_id) {
+        event_id = event_id.toString();
+    }
+    else {
+        return res.status(400).json({ error: "event_id is required" });
+    }
+    // event_id = parseInt(event_id);
     try {
         const eventInfo = yield prisma.event.findFirst({
             where: {
-                event_id: event_id
+                event_id: parseInt(event_id)
             },
             include: {
                 owner: true,
@@ -57,12 +63,17 @@ const getEventInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* (
 exports.getEventInfo = getEventInfo;
 const getEnrollList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
-    let { event_id } = req.body;
-    event_id = parseInt(event_id);
+    let { event_id } = req.query;
+    if (event_id) {
+        event_id = event_id.toString();
+    }
+    else {
+        return res.status(400).json({ error: "event_id is required" });
+    }
     try {
         const eventInfo = yield prisma.event.findFirst({
             where: {
-                event_id: event_id
+                event_id: parseInt(event_id)
             },
             include: {
                 enrollments: {
