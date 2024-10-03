@@ -87,7 +87,7 @@ const getEnrollList = (req, res) => __awaiter(void 0, void 0, void 0, function* 
 exports.getEnrollList = getEnrollList;
 const createEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
-    const { eventTitle, description, eventDate, event_url } = req.body;
+    const { eventTitle, description, eventDate, event_url, eventTime, location } = req.body;
     try {
         const event = yield prisma.event.create({
             data: {
@@ -96,6 +96,8 @@ const createEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 description: description,
                 event_url: event_url,
                 eventDate: eventDate,
+                eventTime: eventTime,
+                location: location,
                 status: false
             }
         });
@@ -138,7 +140,7 @@ const enrollEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.enrollEvent = enrollEvent;
 const editEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
-    let { event_id, eventTitle, description, eventDate, event_url } = req.body;
+    let { event_id, eventTitle, description, eventDate, event_url, location, eventTime } = req.body;
     event_id = parseInt(event_id);
     try {
         const existingEvent = yield prisma.event.findUnique({
@@ -153,7 +155,9 @@ const editEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 eventTitle: eventTitle,
                 description: description,
                 event_url: event_url,
-                eventDate: eventDate
+                eventDate: eventDate,
+                eventTime: eventTime,
+                location: location
             }
         });
         res.json(event);

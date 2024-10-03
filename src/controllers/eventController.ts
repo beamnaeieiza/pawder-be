@@ -75,7 +75,7 @@ export const getEnrollList = async (req: Request, res: Response) => {
 
 export const createEvent = async (req: Request, res: Response) => {
     const id = (req as any).user.userId;
-    const { eventTitle, description, eventDate, event_url } = req.body;
+    const { eventTitle, description, eventDate, event_url, eventTime, location } = req.body;
     try {
    
         const event = await prisma.event.create({
@@ -85,6 +85,8 @@ export const createEvent = async (req: Request, res: Response) => {
                 description: description,
                 event_url: event_url,
                 eventDate: eventDate,
+                eventTime: eventTime,
+                location: location,
                 status: false
 
             }
@@ -132,7 +134,7 @@ export const enrollEvent = async (req: Request, res: Response) => {
 
 export const editEvent = async (req: Request, res: Response) => {
     const id = (req as any).user.userId;
-    let { event_id, eventTitle, description, eventDate, event_url } = req.body;
+    let { event_id, eventTitle, description, eventDate, event_url, location, eventTime } = req.body;
     event_id = parseInt(event_id);
     try {
         const existingEvent = await prisma.event.findUnique({
@@ -149,7 +151,9 @@ export const editEvent = async (req: Request, res: Response) => {
                 eventTitle: eventTitle,
                 description: description,
                 event_url: event_url,
-                eventDate: eventDate
+                eventDate: eventDate,
+                eventTime: eventTime,
+                location: location
             }
         });
 
