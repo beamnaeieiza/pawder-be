@@ -18,7 +18,7 @@ export const randomPet = async (req: Request, res: Response) => {
     });
     const metPetIds = metPets.map(met => met.met_user_id);
 
-    const totalCount = await prisma.pet.count({
+    const totalCount = await prisma.user.count({
       where: {
         NOT: {
           user_id: {
@@ -31,6 +31,7 @@ export const randomPet = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "No available user found." });
     }
     const randomIndex = Math.floor(Math.random() * totalCount);
+    console.log(`Total Count: ${totalCount}, Random Index: ${randomIndex}`);
     const randomPet = await prisma.user.findMany({
       where: {
         NOT: {
@@ -42,7 +43,7 @@ export const randomPet = async (req: Request, res: Response) => {
       include: {
         pets: true,
       },
-      skip: randomIndex,
+      // skip: randomIndex,
       take: 10,
     });
 
@@ -53,7 +54,9 @@ export const randomPet = async (req: Request, res: Response) => {
       return hasPets;
     });
 
-    res.json(usersWithPets);
+    const shuffledUsers = usersWithPets.sort(() => 0.5 - Math.random());
+
+    res.json(shuffledUsers);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to retrieve random pet." });

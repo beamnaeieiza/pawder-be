@@ -26,7 +26,7 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             select: { met_user_id: true }, // Select only the met_pet_id
         });
         const metPetIds = metPets.map(met => met.met_user_id);
-        const totalCount = yield prisma.pet.count({
+        const totalCount = yield prisma.user.count({
             where: {
                 NOT: {
                     user_id: {
@@ -39,6 +39,7 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return res.status(404).json({ error: "No available user found." });
         }
         const randomIndex = Math.floor(Math.random() * totalCount);
+        console.log(`Total Count: ${totalCount}, Random Index: ${randomIndex}`);
         const randomPet = yield prisma.user.findMany({
             where: {
                 NOT: {
@@ -50,7 +51,7 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             include: {
                 pets: true,
             },
-            skip: randomIndex,
+            // skip: randomIndex,
             take: 10,
         });
         const usersWithPets = randomPet.filter(user => {
@@ -58,7 +59,8 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             // console.log('User:', user.email, 'Has Pets:', hasPets);
             return hasPets;
         });
-        res.json(usersWithPets);
+        const shuffledUsers = usersWithPets.sort(() => 0.5 - Math.random());
+        res.json(shuffledUsers);
     }
     catch (error) {
         console.error(error);
