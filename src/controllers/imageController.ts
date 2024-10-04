@@ -54,3 +54,58 @@ export const uploadProfileImage = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to update user" });
   }
 };
+
+export const createPetWithImage = async (req: Request, res: Response) => {
+  const id = (req as any).user.userId;
+  let { breed_id,petname,gender,age,pet_description } = req.body;
+  breed_id = parseInt(breed_id);
+  age = parseFloat(age);
+
+  try {
+    const file = req.file;
+
+    if (!file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+    const blobName = `image-${uuidv4()}.jpg`;
+
+    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+
+    await blockBlobClient.uploadData(file.buffer, {
+        blobHTTPHeaders: {
+          blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
+        },
+      });
+    const imageUrl = blockBlobClient.url;
+
+    const pet = await prisma.user.update({
+      where: { user_id: parseInt(id) },
+      data: {
+        pets: {
+          create: {
+            breed_id: parseInt(breed_id),
+            petname,
+            pet_description,
+            pet_url : imageUrl,
+            gender,
+            age : parseFloat(age),
+
+        },
+      },
+    },
+  });
+
+  //  const user = await prisma.user.update({
+  //       where: { user_id: parseInt(id) },
+  //       data: {
+  //           profile_url: imageUrl,
+  //       },
+  //       });
+    
+        res.json(pet);
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: "Failed to update pet" });
+  }
+};

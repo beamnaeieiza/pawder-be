@@ -138,7 +138,7 @@ export const getChatMessage = async (req: Request, res: Response) => {
     if (chat_id) {
         chat_id = chat_id.toString();
     } else {
-        return res.status(400).json({ error: "event_id is required" });
+        return res.status(400).json({ error: "chat_id is required" });
     }
     try {
       const existingChat = await prisma.chat.findUnique({
@@ -148,13 +148,17 @@ export const getChatMessage = async (req: Request, res: Response) => {
             orderBy: {
               createdAt: 'asc'
             }
-          }
+          },
+            user1: true,
+            user2: true
         }
       });
-  
+      
       if (!existingChat) {
         return res.status(404).json({ error: "Chat not found" });
       }
+
+      const otherPerson = existingChat.user1.user_id === parseInt(id) ? existingChat.user2 : existingChat.user1;
   
       const formattedMessages = existingChat.messages.map(message => ({
         ...message,
@@ -163,9 +167,22 @@ export const getChatMessage = async (req: Request, res: Response) => {
       }));
   
       res.json({
-        ...existingChat,
+        chat_id: existingChat.chat_id,
+        user_id1: existingChat.user_id1,
+        user_id2: existingChat.user_id2,
+        createdAt: existingChat.createdAt,
+        updatedAt: existingChat.updatedAt,
+        otherPerson: {
+            user_id: otherPerson.user_id,
+            firstname: otherPerson.firstname,
+            lastname: otherPerson.lastname,
+            username: otherPerson.username,
+            profile_url: otherPerson.profile_url
+          },
         messages: formattedMessages
+        
       });
+
     } catch (error) {
       console.log(error);
       res.status(500).json({ error: "Failed to get chat messages" });

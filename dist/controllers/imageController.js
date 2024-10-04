@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.uploadProfileImage = void 0;
+exports.createPetWithImage = exports.uploadProfileImage = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 const storage_blob_1 = require("@azure/storage-blob");
@@ -57,3 +57,50 @@ const uploadProfileImage = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.uploadProfileImage = uploadProfileImage;
+const createPetWithImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    let { breed_id, petname, gender, age, pet_description } = req.body;
+    breed_id = parseInt(breed_id);
+    age = parseFloat(age);
+    try {
+        const file = req.file;
+        if (!file) {
+            return res.status(400).json({ error: "No file uploaded" });
+        }
+        const blobName = `image-${(0, uuid_1.v4)()}.jpg`;
+        const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+        yield blockBlobClient.uploadData(file.buffer, {
+            blobHTTPHeaders: {
+                blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
+            },
+        });
+        const imageUrl = blockBlobClient.url;
+        const pet = yield prisma.user.update({
+            where: { user_id: parseInt(id) },
+            data: {
+                pets: {
+                    create: {
+                        breed_id: parseInt(breed_id),
+                        petname,
+                        pet_description,
+                        pet_url: imageUrl,
+                        gender,
+                        age: parseFloat(age),
+                    },
+                },
+            },
+        });
+        //  const user = await prisma.user.update({
+        //       where: { user_id: parseInt(id) },
+        //       data: {
+        //           profile_url: imageUrl,
+        //       },
+        //       });
+        res.json(pet);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to update pet" });
+    }
+});
+exports.createPetWithImage = createPetWithImage;

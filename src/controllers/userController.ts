@@ -99,7 +99,7 @@ export const getUserById = async (req: Request, res: Response) => {
 // Update a user by ID
 export const updateUser = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
-  const { firstname, lastname, email,gender, birthdate } = req.body;
+  const { firstname, lastname, email,gender, birthdate, location_latitude, location_longitude } = req.body;
   try {
     
     const user = await prisma.user.update({
@@ -109,7 +109,9 @@ export const updateUser = async (req: Request, res: Response) => {
         lastname,
         email,
         gender,
-        birthdate
+        birthdate,
+        location_latitude,
+        location_longitude
       },
     });
     res.json(user);
@@ -178,5 +180,38 @@ export const deleteUser = async (req: Request, res: Response) => {
     res.status(204).send();
   } catch (error) {
     res.status(500).json({ error: "Failed to delete user" });
+  }
+};
+
+
+export const getStatistic = async (req: Request, res: Response) => {
+  const id = (req as any).user.userId;
+
+  try {
+
+    const totalSwipes = await prisma.user_Interest.count({
+      where: { user_id: id },
+    });
+
+    const totalLikes = await prisma.user_Interest.count({
+      where: { target_user_id: id },
+    });
+
+    const totalMatches = await prisma.match.count({
+      where: {
+        OR: [
+          { user_id1: id },
+          { user_id2: id },
+        ],
+      },
+    });
+
+    const totalNotMatches = totalSwipes - totalMatches;
+    
+
+    res.json({totalSwipes, totalMatches, totalNotMatches, totalLikes});
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to retrieve user saved information." });
   }
 };

@@ -20,4 +20,6 @@ router.post(`${routeType}/createPet`, authMiddleware_1.default, userController_1
 router.get(`${routeType}/getPet`, authMiddleware_1.default, userController_1.getPetList);
 router.delete("/users/:id", userController_1.deleteUser);
 router.post("/users/uploadProfileImage", upload.single('file'), authMiddleware_1.default, imageController_1.uploadProfileImage);
+router.post("/users/createPetWithImage", upload.single('file'), authMiddleware_1.default, imageController_1.createPetWithImage);
+router.get("/users/getStatistic", authMiddleware_1.default, userController_1.getStatistic);
 exports.default = router;

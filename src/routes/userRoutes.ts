@@ -8,8 +8,9 @@ import {
   login,
   createPet,
   getPetList,
+  getStatistic
 } from "../controllers/userController";
-import { uploadProfileImage } from "../controllers/imageController";
+import { uploadProfileImage, createPetWithImage } from "../controllers/imageController";
 import authMiddleware from "../middlewares/authMiddleware";
 import multer from "multer";
 
@@ -27,5 +28,8 @@ router.get(`${routeType}/getPet`,authMiddleware , getPetList);
 router.delete("/users/:id", deleteUser);
 
 router.post("/users/uploadProfileImage", upload.single('file'), authMiddleware, uploadProfileImage);
+router.post("/users/createPetWithImage", upload.single('file'), authMiddleware, createPetWithImage);
+
+router.get("/users/getStatistic", authMiddleware, getStatistic);
 
 export default router;

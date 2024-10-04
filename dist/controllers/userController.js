@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.getPetList = exports.createPet = exports.updateUser = exports.getUserById = exports.getUsers = exports.login = exports.signUp = void 0;
+exports.getStatistic = exports.deleteUser = exports.getPetList = exports.createPet = exports.updateUser = exports.getUserById = exports.getUsers = exports.login = exports.signUp = void 0;
 const client_1 = require("@prisma/client");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -103,7 +103,7 @@ exports.getUserById = getUserById;
 // Update a user by ID
 const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
-    const { firstname, lastname, email, gender, birthdate } = req.body;
+    const { firstname, lastname, email, gender, birthdate, location_latitude, location_longitude } = req.body;
     try {
         const user = yield prisma.user.update({
             where: { user_id: parseInt(id) },
@@ -112,7 +112,9 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 lastname,
                 email,
                 gender,
-                birthdate
+                birthdate,
+                location_latitude,
+                location_longitude
             },
         });
         res.json(user);
@@ -186,3 +188,29 @@ const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.deleteUser = deleteUser;
+const getStatistic = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    try {
+        const totalSwipes = yield prisma.user_Interest.count({
+            where: { user_id: id },
+        });
+        const totalLikes = yield prisma.user_Interest.count({
+            where: { target_user_id: id },
+        });
+        const totalMatches = yield prisma.match.count({
+            where: {
+                OR: [
+                    { user_id1: id },
+                    { user_id2: id },
+                ],
+            },
+        });
+        const totalNotMatches = totalSwipes - totalMatches;
+        res.json({ totalSwipes, totalMatches, totalNotMatches, totalLikes });
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Failed to retrieve user saved information." });
+    }
+});
+exports.getStatistic = getStatistic;
