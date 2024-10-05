@@ -31,7 +31,7 @@ export const randomPet = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "No available user found." });
     }
     const randomIndex = Math.floor(Math.random() * totalCount);
-    console.log(`Total Count: ${totalCount}, Random Index: ${randomIndex}`);
+    // console.log(`Total Count: ${totalCount}, Random Index: ${randomIndex}`);
     const randomPet = await prisma.user.findMany({
       where: {
         NOT: {

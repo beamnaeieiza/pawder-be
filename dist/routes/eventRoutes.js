@@ -5,7 +5,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const eventController_1 = require("../controllers/eventController");
+const imageController_1 = require("../controllers/imageController");
 const authMiddleware_1 = __importDefault(require("../middlewares/authMiddleware"));
+const multer_1 = __importDefault(require("multer"));
+const upload = (0, multer_1.default)({ storage: multer_1.default.memoryStorage() });
 const router = (0, express_1.Router)();
 const routeType = "/event";
 router.get(`${routeType}/getEventList`, authMiddleware_1.default, eventController_1.getEventList);
@@ -14,4 +17,6 @@ router.get(`${routeType}/getEnrollList`, authMiddleware_1.default, eventControll
 router.post(`${routeType}/createEvent`, authMiddleware_1.default, eventController_1.createEvent);
 router.post(`${routeType}/enrollEvent`, authMiddleware_1.default, eventController_1.enrollEvent);
 router.post(`${routeType}/editEvent`, authMiddleware_1.default, eventController_1.editEvent);
+router.post(`${routeType}/createEventWithImage`, upload.single('file'), authMiddleware_1.default, imageController_1.createEventWithImage);
+router.post(`${routeType}/updateEventWithImage`, upload.single('file'), authMiddleware_1.default, imageController_1.updateEventWithImage);
 exports.default = router;
