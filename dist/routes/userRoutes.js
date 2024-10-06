@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const userController_1 = require("../controllers/userController");
 const imageController_1 = require("../controllers/imageController");
+const ratingController_1 = require("../controllers/ratingController");
 const authMiddleware_1 = __importDefault(require("../middlewares/authMiddleware"));
 const multer_1 = __importDefault(require("multer"));
 const router = (0, express_1.Router)();
@@ -19,6 +20,9 @@ router.put("/users/update", authMiddleware_1.default, userController_1.updateUse
 router.post(`${routeType}/createPet`, authMiddleware_1.default, userController_1.createPet);
 router.get(`${routeType}/getPet`, authMiddleware_1.default, userController_1.getPetList);
 router.delete("/users/:id", userController_1.deleteUser);
+router.get("/users/getDogById", authMiddleware_1.default, userController_1.getDogById);
+router.get("/users/getUserIdInfo/", authMiddleware_1.default, userController_1.getUserIdInfo);
+router.post("/users/createComment", authMiddleware_1.default, ratingController_1.createComment);
 router.post("/users/uploadProfileImage", upload.single('file'), authMiddleware_1.default, imageController_1.uploadProfileImage);
 router.post("/users/createPetWithImage", upload.single('file'), authMiddleware_1.default, imageController_1.createPetWithImage);
 router.get("/users/getStatistic", authMiddleware_1.default, userController_1.getStatistic);

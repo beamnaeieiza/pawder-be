@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getStatistic = exports.deleteUser = exports.getPetList = exports.createPet = exports.updateUser = exports.getUserById = exports.getUsers = exports.login = exports.signUp = void 0;
+exports.getStatistic = exports.deleteUser = exports.getPetList = exports.createPet = exports.updateUser = exports.getDogById = exports.getUserIdInfo = exports.getUserById = exports.getUsers = exports.login = exports.signUp = void 0;
 const client_1 = require("@prisma/client");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -100,6 +100,58 @@ const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.getUserById = getUserById;
+const getUserIdInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let { user_id } = req.query;
+    if (user_id) {
+        user_id = user_id.toString();
+    }
+    else {
+        return res.status(400).json({ error: "user_id is required" });
+    }
+    try {
+        const user = yield prisma.user.findUnique({
+            where: { user_id: parseInt(user_id) },
+            include: {
+                pets: true,
+                rating: true
+            }
+        });
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        res.json(user);
+    }
+    catch (error) {
+        res.status(500).json({ error: "Failed to fetch user" });
+    }
+});
+exports.getUserIdInfo = getUserIdInfo;
+const getDogById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    let { pet_id } = req.query;
+    if (pet_id) {
+        pet_id = pet_id.toString();
+    }
+    else {
+        return res.status(400).json({ error: "pet_id is required" });
+    }
+    try {
+        const pet = yield prisma.pet.findUnique({
+            where: { pet_id: parseInt(pet_id) },
+            include: {
+                user: true,
+            }
+        });
+        if (!pet) {
+            return res.status(404).json({ message: "Pet not found" });
+        }
+        res.json(pet);
+    }
+    catch (error) {
+        res.status(500).json({ error: "Failed to fetch user" });
+    }
+});
+exports.getDogById = getDogById;
 // Update a user by ID
 const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;

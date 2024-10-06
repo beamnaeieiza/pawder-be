@@ -37,6 +37,7 @@ model User {
   user_haveMet       User_HaveMet[]
   user_interest      User_Interest[]
   user_saved         User_Saved[]
+  rating            Rating[]
 }
 
 model Pet {
@@ -55,6 +56,17 @@ model Pet {
   // Pet_Breed_Relation Pet_Breed_Relation[]
 
   @@index([user_id], map: "Pet_user_id_fkey")
+}
+
+model Rating {
+  rating_id          Int                  @id @default(autoincrement())
+  user_id            Int
+  from_user_id       Int
+  rating             Float?
+  comment            String?
+  rating_user        User                 @relation(fields: [from_user_id], references: [user_id])
+
+  @@index([user_id], map: "Rating_user_id_fkey")
 }
 
 model Event {

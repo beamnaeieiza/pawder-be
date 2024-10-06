@@ -96,6 +96,55 @@ export const getUserById = async (req: Request, res: Response) => {
   }
 };
 
+export const getUserIdInfo = async (req: Request, res: Response) => {
+  let { user_id } = req.query;
+  if (user_id) {
+    user_id = user_id.toString();
+} else {
+    return res.status(400).json({ error: "user_id is required" });
+}
+  try {
+    const user = await prisma.user.findUnique({
+      where: { user_id: parseInt(user_id) },
+      include: {
+        pets: true,
+        rating: true
+
+      }
+    });
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch user" });
+  }
+}
+
+export const getDogById = async (req: Request, res: Response) => {
+  const id = (req as any).user.userId;
+  let { pet_id } = req.query;
+  if (pet_id) {
+    pet_id = pet_id.toString();
+} else {
+    return res.status(400).json({ error: "pet_id is required" });
+}
+  try {
+    const pet = await prisma.pet.findUnique({
+      where: { pet_id: parseInt(pet_id) },
+    include: {
+      user: true,
+    }
+    });
+    if (!pet) {
+      return res.status(404).json({ message: "Pet not found" });
+    }
+    res.json(pet);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch user" });
+  }
+};
+
 // Update a user by ID
 export const updateUser = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
