@@ -108,7 +108,19 @@ export const getUserIdInfo = async (req: Request, res: Response) => {
       where: { user_id: parseInt(user_id) },
       include: {
         pets: true,
-        rating: true
+        rating: {
+          include: {
+            rating_user : {
+              select : {
+                user_id : true,
+                username : true,
+                firstname : true,
+                lastname : true,
+                profile_url : true
+              }
+            },
+          }
+        }
 
       }
     });

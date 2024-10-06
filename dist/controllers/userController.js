@@ -113,7 +113,19 @@ const getUserIdInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* 
             where: { user_id: parseInt(user_id) },
             include: {
                 pets: true,
-                rating: true
+                rating: {
+                    include: {
+                        rating_user: {
+                            select: {
+                                user_id: true,
+                                username: true,
+                                firstname: true,
+                                lastname: true,
+                                profile_url: true
+                            }
+                        },
+                    }
+                }
             }
         });
         if (!user) {

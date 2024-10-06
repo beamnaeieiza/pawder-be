@@ -28,6 +28,9 @@ const createComment = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 from_user_id: parseInt(user_id),
                 rating: parseFloat(rating),
                 comment
+            },
+            include: {
+                rating_user: true
             }
         });
         res.json(newRating);

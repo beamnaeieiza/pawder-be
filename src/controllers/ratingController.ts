@@ -19,6 +19,9 @@ export const createComment = async (req: Request, res: Response) => {
                 from_user_id : parseInt(user_id),
                 rating : parseFloat(rating),
                 comment
+            },
+            include: {
+                rating_user: true
             }
         });
         res.json(newRating);
