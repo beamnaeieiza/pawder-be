@@ -152,6 +152,12 @@ const getDogById = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             where: { pet_id: parseInt(pet_id) },
             include: {
                 user: true,
+                breed: {
+                    select: {
+                        breed_id: true,
+                        breedName: true,
+                    }
+                }
             }
         });
         if (!pet) {

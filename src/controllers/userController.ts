@@ -146,6 +146,12 @@ export const getDogById = async (req: Request, res: Response) => {
       where: { pet_id: parseInt(pet_id) },
     include: {
       user: true,
+      breed: {
+        select: {
+          breed_id: true,
+          breedName: true,
+        }
+      }
     }
     });
     if (!pet) {
