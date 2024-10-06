@@ -125,6 +125,19 @@ export const sendChatMessage = async (req: Request, res: Response) => {
             }
         });
 
+        const user = await prisma.user.findUnique({
+            where: { user_id: parseInt(id) }
+        });
+
+        const notification = await prisma.notification.create({
+            data: {
+                user_id: receiver_id,
+                title: "New Message",
+                message: "You have a new message from "+ user?.firstname,
+                read_status: false
+            }
+        });
+
         res.json(chat);
     } catch (error) {
         console.log(error);

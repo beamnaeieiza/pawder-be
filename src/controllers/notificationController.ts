@@ -20,3 +20,44 @@ export const getNotificationList = async (req: Request, res: Response) => {
         res.status(500).json({ error: "Failed to get notification list" });
     }
 };
+
+export const readNotification = async (req: Request, res: Response) => {
+    const id = (req as any).user.userId;
+    let { notification_id } = req.body;
+    if (notification_id) {
+        notification_id = notification_id.toString();
+    } else {
+        return res.status(400).json({ error: "notification_id is required" });
+    }
+    try {
+        const notification = await prisma.notification.update({
+            where: { notification_id: parseInt(notification_id) },
+            data: {
+                read_status: true,
+            }
+        });
+        res.json(notification);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to mark read notification" });
+    }
+}
+
+export const removeNotification = async (req: Request, res: Response) => {
+    const id = (req as any).user.userId;
+    let { notification_id } = req.body;
+    if (notification_id) {
+        notification_id = notification_id.toString();
+    } else {
+        return res.status(400).json({ error: "notification_id is required" });
+    }
+    try {
+        const notification = await prisma.notification.delete({
+            where: { notification_id: parseInt(notification_id) },
+        });
+        res.json("notification removed");
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to remove notification" });
+    }
+}

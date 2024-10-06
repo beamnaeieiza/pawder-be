@@ -113,6 +113,32 @@ export const likePet = async (req: Request, res: Response) => {
             user_id2: target_user_id,
           },
         });
+
+        const user = await prisma.user.findUnique({
+          where: { user_id: parseInt(userId) }
+      });
+
+      const userTarget = await prisma.user.findUnique({
+        where: { user_id: parseInt(target_user_id) }
+    });
+
+      const notification = await prisma.notification.create({
+          data: {
+              user_id: userId,
+              title: "New Match",
+              message: "You have match with"+ userTarget?.firstname,
+              read_status: false
+          }
+      });
+
+      const notification2 = await prisma.notification.create({
+        data: {
+            user_id: target_user_id,
+            title: "New Match",
+            message: "You have match with"+ user?.firstname,
+            read_status: false
+        }
+    });
         res.status(201).json(newMatch);
       }
 

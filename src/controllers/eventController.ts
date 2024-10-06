@@ -123,6 +123,21 @@ export const enrollEvent = async (req: Request, res: Response) => {
             return res.status(404).json({ error: "Event not found" });
         }
 
+        const existingEnrollment = await prisma.event.findFirst({
+            where: {
+                event_id: event_id,
+                enrollments: {
+                    some: {
+                        user_id: parseInt(id),
+                    }
+                }
+            }
+        });
+
+        if (existingEnrollment) {
+            return res.status(400).json({ error: "You already enrolled in the event" });
+        }
+
         const event = await prisma.event.update({
             where: { event_id: event_id },
             data: {
@@ -133,6 +148,29 @@ export const enrollEvent = async (req: Request, res: Response) => {
                 }
             }
         });
+
+        const owner = await prisma.event.findUnique({
+            where: { event_id: parseInt(event_id) },
+            include: {
+                owner: true
+            }
+        });
+
+        const user = await prisma.user.findUnique({
+            where: { user_id: parseInt(id) },
+            
+        });
+     
+          if (owner?.owner.user_id) {
+              const notification = await prisma.notification.create({
+                  data: {
+                      user_id: owner.owner.user_id,
+                      title: "New Enrollment",
+                      message: user?.firstname + " has enrolled in your event '" + owner?.eventTitle+ "' !",
+                      read_status: false
+                  }
+              });
+          }
 
         res.json(event);
     } catch (error) {

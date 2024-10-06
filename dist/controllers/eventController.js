@@ -131,6 +131,19 @@ const enrollEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         if (!existingEvent) {
             return res.status(404).json({ error: "Event not found" });
         }
+        const existingEnrollment = yield prisma.event.findFirst({
+            where: {
+                event_id: event_id,
+                enrollments: {
+                    some: {
+                        user_id: parseInt(id),
+                    }
+                }
+            }
+        });
+        if (existingEnrollment) {
+            return res.status(400).json({ error: "You already enrolled in the event" });
+        }
         const event = yield prisma.event.update({
             where: { event_id: event_id },
             data: {
@@ -141,6 +154,25 @@ const enrollEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 }
             }
         });
+        const owner = yield prisma.event.findUnique({
+            where: { event_id: parseInt(event_id) },
+            include: {
+                owner: true
+            }
+        });
+        const user = yield prisma.user.findUnique({
+            where: { user_id: parseInt(id) },
+        });
+        if (owner === null || owner === void 0 ? void 0 : owner.owner.user_id) {
+            const notification = yield prisma.notification.create({
+                data: {
+                    user_id: owner.owner.user_id,
+                    title: "New Enrollment",
+                    message: (user === null || user === void 0 ? void 0 : user.firstname) + " has enrolled in your event '" + (owner === null || owner === void 0 ? void 0 : owner.eventTitle) + "' !",
+                    read_status: false
+                }
+            });
+        }
         res.json(event);
     }
     catch (error) {

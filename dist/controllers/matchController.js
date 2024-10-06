@@ -114,6 +114,28 @@ const likePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     user_id2: target_user_id,
                 },
             });
+            const user = yield prisma.user.findUnique({
+                where: { user_id: parseInt(userId) }
+            });
+            const userTarget = yield prisma.user.findUnique({
+                where: { user_id: parseInt(target_user_id) }
+            });
+            const notification = yield prisma.notification.create({
+                data: {
+                    user_id: userId,
+                    title: "New Match",
+                    message: "You have match with" + (userTarget === null || userTarget === void 0 ? void 0 : userTarget.firstname),
+                    read_status: false
+                }
+            });
+            const notification2 = yield prisma.notification.create({
+                data: {
+                    user_id: target_user_id,
+                    title: "New Match",
+                    message: "You have match with" + (user === null || user === void 0 ? void 0 : user.firstname),
+                    read_status: false
+                }
+            });
             res.status(201).json(newMatch);
         }
         else {

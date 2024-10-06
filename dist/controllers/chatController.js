@@ -138,6 +138,17 @@ const sendChatMessage = (req, res) => __awaiter(void 0, void 0, void 0, function
                 }
             }
         });
+        const user = yield prisma.user.findUnique({
+            where: { user_id: parseInt(id) }
+        });
+        const notification = yield prisma.notification.create({
+            data: {
+                user_id: receiver_id,
+                title: "New Message",
+                message: "You have a new message from " + (user === null || user === void 0 ? void 0 : user.firstname),
+                read_status: false
+            }
+        });
         res.json(chat);
     }
     catch (error) {
