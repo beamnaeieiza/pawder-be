@@ -21,7 +21,11 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const getNotificationList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
     try {
-        const notificationList = yield prisma.notification.findMany({});
+        const notificationList = yield prisma.notification.findMany({
+            where: {
+                user_id: parseInt(id)
+            }
+        });
         res.json(notificationList);
     }
     catch (error) {

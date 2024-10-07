@@ -13,6 +13,9 @@ export const getNotificationList = async (req: Request, res: Response) => {
     const id = (req as any).user.userId;
     try {
         const notificationList = await prisma.notification.findMany({
+            where: {
+                user_id: parseInt(id)
+            }
         });
         res.json(notificationList);
     } catch (error) {
