@@ -13,4 +13,5 @@ router.get(`${routeType}/getChatList`, authMiddleware_1.default, chatController_
 router.get(`${routeType}/getChatMessage`, authMiddleware_1.default, chatController_1.getChatMessage);
 router.post(`${routeType}/createChat`, authMiddleware_1.default, chatController_1.createChat);
 router.post(`${routeType}/sendMessage`, authMiddleware_1.default, chatController_1.sendChatMessage);
+router.post(`${routeType}/markRead`, authMiddleware_1.default, chatController_1.markChatRead);
 exports.default = router;

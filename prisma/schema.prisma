@@ -134,6 +134,7 @@ model Chat_Message {
   receiver_id Int
   types       MessageType?
   message     String?
+  read_status Boolean?
   createdAt   DateTime?    @default(now())
   match       Chat        @relation(fields: [chat_id], references: [chat_id])
 

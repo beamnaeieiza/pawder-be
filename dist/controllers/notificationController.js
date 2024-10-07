@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.removeNotification = exports.readNotification = exports.getNotificationList = void 0;
+exports.markAllReadNotification = exports.removeNotification = exports.readNotification = exports.getNotificationList = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
@@ -75,3 +75,20 @@ const removeNotification = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.removeNotification = removeNotification;
+const markAllReadNotification = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    try {
+        const notification = yield prisma.notification.updateMany({
+            where: { user_id: parseInt(id) },
+            data: {
+                read_status: true,
+            }
+        });
+        res.json("All notifications marked read!");
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to mark all notifications read" });
+    }
+});
+exports.markAllReadNotification = markAllReadNotification;

@@ -61,3 +61,19 @@ export const removeNotification = async (req: Request, res: Response) => {
         res.status(500).json({ error: "Failed to remove notification" });
     }
 }
+
+export const markAllReadNotification = async (req: Request, res: Response) => {
+    const id = (req as any).user.userId;
+    try {
+        const notification = await prisma.notification.updateMany({
+            where: { user_id: parseInt(id) },
+            data: {
+                read_status: true,
+            }
+        });
+        res.json("All notifications marked read!");
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to mark all notifications read" });
+    }
+}

@@ -201,3 +201,43 @@ export const getChatMessage = async (req: Request, res: Response) => {
       res.status(500).json({ error: "Failed to get chat messages" });
     }
   };
+
+  export const markChatRead = async (req: Request, res: Response) => {
+    const id = (req as any).user.userId;
+    let { chat_id } = req.body;
+    if (chat_id) {
+        chat_id = chat_id.toString();
+    } else {
+        return res.status(400).json({ error: "chat_id is required" });
+    }
+    try {
+        const existingChat = await prisma.chat.findUnique({
+            where: { chat_id: parseInt(chat_id) }
+        });
+
+        if (!existingChat) {
+            return res.status(404).json({ error: "Chat not found" });
+        }
+
+        const chat = await prisma.chat.update({
+            where: { chat_id: parseInt(chat_id) },
+            data: {
+                messages: {
+                    updateMany: {
+                        where: {
+                            receiver_id: parseInt(id)
+                        },
+                        data: {
+                            read_status: true
+                        }
+                    }
+                }
+            }
+        });
+
+        res.json(chat);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to mark chat read" });
+    }
+}

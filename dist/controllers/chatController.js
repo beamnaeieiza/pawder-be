@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getChatMessage = exports.sendChatMessage = exports.createChat = exports.getChatList = exports.getMatchList = void 0;
+exports.markChatRead = exports.getChatMessage = exports.sendChatMessage = exports.createChat = exports.getChatList = exports.getMatchList = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
@@ -206,3 +206,42 @@ const getChatMessage = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.getChatMessage = getChatMessage;
+const markChatRead = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    let { chat_id } = req.body;
+    if (chat_id) {
+        chat_id = chat_id.toString();
+    }
+    else {
+        return res.status(400).json({ error: "chat_id is required" });
+    }
+    try {
+        const existingChat = yield prisma.chat.findUnique({
+            where: { chat_id: parseInt(chat_id) }
+        });
+        if (!existingChat) {
+            return res.status(404).json({ error: "Chat not found" });
+        }
+        const chat = yield prisma.chat.update({
+            where: { chat_id: parseInt(chat_id) },
+            data: {
+                messages: {
+                    updateMany: {
+                        where: {
+                            receiver_id: parseInt(id)
+                        },
+                        data: {
+                            read_status: true
+                        }
+                    }
+                }
+            }
+        });
+        res.json(chat);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to mark chat read" });
+    }
+});
+exports.markChatRead = markChatRead;

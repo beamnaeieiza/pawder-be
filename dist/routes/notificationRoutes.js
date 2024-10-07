@@ -11,4 +11,5 @@ const routeType = "/notification";
 router.get(`${routeType}/getNotificationList`, authMiddleware_1.default, notificationController_1.getNotificationList);
 router.post(`${routeType}/readNotification`, authMiddleware_1.default, notificationController_1.readNotification);
 router.post(`${routeType}/removeNotification`, authMiddleware_1.default, notificationController_1.removeNotification);
+router.post(`${routeType}/markAllRead`, authMiddleware_1.default, notificationController_1.markAllReadNotification);
 exports.default = router;
