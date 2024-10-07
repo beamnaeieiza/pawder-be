@@ -275,6 +275,31 @@ export const deleteUser = async (req: Request, res: Response) => {
   }
 };
 
+export const getUserLikeByList = async (req: Request, res: Response) => {
+  const id = (req as any).user.userId;
+  try {
+    const likeList = await prisma.user_Interest.findMany({
+      where: { target_user_id: parseInt(id) },
+      include: {
+        owner: {
+          select: {
+            user_id: true,
+            username: true,
+            firstname: true,
+            lastname: true,
+            profile_url: true,
+          }
+        }
+      }
+    });
+
+    res.json(likeList);
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: "Failed to get like information" });
+  }
+}
+
 
 export const getStatistic = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;

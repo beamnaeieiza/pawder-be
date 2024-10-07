@@ -10,7 +10,8 @@ import {
   getPetList,
   getStatistic,
   getDogById,
-  getUserIdInfo
+  getUserIdInfo,
+  getUserLikeByList
 } from "../controllers/userController";
 import { uploadProfileImage, createPetWithImage } from "../controllers/imageController";
 import { createComment } from "../controllers/ratingController";
@@ -38,5 +39,6 @@ router.post("/users/uploadProfileImage", upload.single('file'), authMiddleware, 
 router.post("/users/createPetWithImage", upload.single('file'), authMiddleware, createPetWithImage);
 
 router.get("/users/getStatistic", authMiddleware, getStatistic);
+router.get("/users/getUserLikeByList", authMiddleware, getUserLikeByList);
 
 export default router;

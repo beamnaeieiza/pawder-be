@@ -26,4 +26,5 @@ router.post("/users/createComment", authMiddleware_1.default, ratingController_1
 router.post("/users/uploadProfileImage", upload.single('file'), authMiddleware_1.default, imageController_1.uploadProfileImage);
 router.post("/users/createPetWithImage", upload.single('file'), authMiddleware_1.default, imageController_1.createPetWithImage);
 router.get("/users/getStatistic", authMiddleware_1.default, userController_1.getStatistic);
+router.get("/users/getUserLikeByList", authMiddleware_1.default, userController_1.getUserLikeByList);
 exports.default = router;

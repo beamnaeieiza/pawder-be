@@ -35,7 +35,8 @@ model User {
   pets               Pet[]
   user_dislike       User_Dislike[]
   user_haveMet       User_HaveMet[]
-  user_interest      User_Interest[]
+  interests         User_Interest[] @relation(name: "TargetUser")
+  user_interest     User_Interest[] @relation(name: "OwnerUser")
   user_saved         User_Saved[]
   rating            Rating[]
 
@@ -166,7 +167,8 @@ model User_HaveMet {
 model User_Interest {
   user_id   Int
   target_user_id Int
-  user      User @relation(fields: [target_user_id], references: [user_id])
+  user           User @relation(name: "TargetUser", fields: [target_user_id], references: [user_id])
+  owner          User @relation(name: "OwnerUser", fields: [user_id], references: [user_id])
 
   @@id([user_id, target_user_id])
 }

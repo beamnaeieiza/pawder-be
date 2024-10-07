@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getStatistic = exports.deleteUser = exports.getPetList = exports.createPet = exports.updateUser = exports.getDogById = exports.getUserIdInfo = exports.getUserById = exports.getUsers = exports.login = exports.signUp = void 0;
+exports.getStatistic = exports.getUserLikeByList = exports.deleteUser = exports.getPetList = exports.createPet = exports.updateUser = exports.getDogById = exports.getUserIdInfo = exports.getUserById = exports.getUsers = exports.login = exports.signUp = void 0;
 const client_1 = require("@prisma/client");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -282,6 +282,31 @@ const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.deleteUser = deleteUser;
+const getUserLikeByList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    try {
+        const likeList = yield prisma.user_Interest.findMany({
+            where: { target_user_id: parseInt(id) },
+            include: {
+                owner: {
+                    select: {
+                        user_id: true,
+                        username: true,
+                        firstname: true,
+                        lastname: true,
+                        profile_url: true,
+                    }
+                }
+            }
+        });
+        res.json(likeList);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to get like information" });
+    }
+});
+exports.getUserLikeByList = getUserLikeByList;
 const getStatistic = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
     try {
