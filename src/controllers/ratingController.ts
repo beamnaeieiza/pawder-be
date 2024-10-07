@@ -15,14 +15,12 @@ export const createComment = async (req: Request, res: Response) => {
     try {
         const newRating = await prisma.rating.create({
             data: {
-                user_id: parseInt(id),
-                from_user_id : parseInt(user_id),
+                user_id: parseInt(user_id),
+                from_user_id : parseInt(id),
                 rating : parseFloat(rating),
                 comment
-            },
-            include: {
-                rating_user: true
             }
+        
         });
         res.json(newRating);
     } catch (error) {

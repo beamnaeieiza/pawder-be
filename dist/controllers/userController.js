@@ -112,26 +112,50 @@ const getUserIdInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         const user = yield prisma.user.findUnique({
             where: { user_id: parseInt(user_id) },
             include: {
-                pets: true,
-                rating: {
+                pets: {
                     include: {
-                        rating_user: {
+                        breed: {
                             select: {
-                                user_id: true,
-                                username: true,
-                                firstname: true,
-                                lastname: true,
-                                profile_url: true
+                                breed_id: true,
+                                breedName: true,
                             }
-                        },
+                        }
                     }
-                }
+                },
+                // rating: {
+                // where: { user_id: parseInt(user_id) },
+                //   include: {
+                //     rating_user : {
+                //       select : {
+                //         user_id : true,
+                //         username : true,
+                //         firstname : true,
+                //         lastname : true,
+                //         profile_url : true
+                //       }
+                //     },
+                //   }
+                // }
+            }
+        });
+        const rating = yield prisma.rating.findMany({
+            where: { user_id: parseInt(user_id) },
+            include: {
+                rating_user: {
+                    select: {
+                        user_id: true,
+                        username: true,
+                        firstname: true,
+                        lastname: true,
+                        profile_url: true
+                    }
+                },
             }
         });
         if (!user) {
             return res.status(404).json({ message: "User not found" });
         }
-        res.json(user);
+        res.json({ user, rating });
     }
     catch (error) {
         res.status(500).json({ error: "Failed to fetch user" });

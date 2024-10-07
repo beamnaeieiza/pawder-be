@@ -38,6 +38,7 @@ model User {
   user_interest      User_Interest[]
   user_saved         User_Saved[]
   rating            Rating[]
+
 }
 
 model Pet {
@@ -65,6 +66,7 @@ model Rating {
   rating             Float?
   comment            String?
   rating_user        User                 @relation(fields: [from_user_id], references: [user_id])
+  // user               User                @relation(fields: [user_id], references: [user_id])
 
   @@index([user_id], map: "Rating_user_id_fkey")
 }
