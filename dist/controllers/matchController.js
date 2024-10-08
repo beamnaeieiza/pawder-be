@@ -124,7 +124,7 @@ const likePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 data: {
                     user_id: userId,
                     title: "New Match",
-                    message: "You have match with" + (userTarget === null || userTarget === void 0 ? void 0 : userTarget.firstname),
+                    message: "You have match with " + (userTarget === null || userTarget === void 0 ? void 0 : userTarget.firstname),
                     read_status: false
                 }
             });
@@ -132,7 +132,7 @@ const likePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 data: {
                     user_id: target_user_id,
                     title: "New Match",
-                    message: "You have match with" + (user === null || user === void 0 ? void 0 : user.firstname),
+                    message: "You have match with " + (user === null || user === void 0 ? void 0 : user.firstname),
                     read_status: false
                 }
             });

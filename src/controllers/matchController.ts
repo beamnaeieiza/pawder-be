@@ -126,7 +126,7 @@ export const likePet = async (req: Request, res: Response) => {
           data: {
               user_id: userId,
               title: "New Match",
-              message: "You have match with"+ userTarget?.firstname,
+              message: "You have match with "+ userTarget?.firstname,
               read_status: false
           }
       });
@@ -135,7 +135,7 @@ export const likePet = async (req: Request, res: Response) => {
         data: {
             user_id: target_user_id,
             title: "New Match",
-            message: "You have match with"+ user?.firstname,
+            message: "You have match with "+ user?.firstname,
             read_status: false
         }
     });
