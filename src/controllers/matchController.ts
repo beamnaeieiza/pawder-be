@@ -149,6 +149,13 @@ export const likePet = async (req: Request, res: Response) => {
           target_user_id: target_user_id,
         },
       });
+
+      const newMet = await prisma.user_HaveMet.create({
+        data: {
+          user_id: userId,
+          met_user_id: target_user_id,
+        },
+      });
   
       res.status(201).json(newLike);
     }
