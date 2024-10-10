@@ -158,6 +158,7 @@ export const getPetCompatibility = async (req: Request, res: Response) => {
       return {
         petId: pet.pet_id,
         petName: pet.petname, // Assuming there is a 'name' field in the Pet model
+        breed: pet.breed?.breedName,
         pet_url: pet.pet_url,
         compatibilityPercentage: percentage,
         explanations, // Detailed explanations for each trait

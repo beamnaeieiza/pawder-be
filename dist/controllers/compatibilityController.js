@@ -123,10 +123,12 @@ const getPetCompatibility = (req, res) => __awaiter(void 0, void 0, void 0, func
         });
         // Calculate compatibility scores for each pet owned by the user
         const compatibilityResults = userPets.map((pet) => {
+            var _a;
             const { percentage, explanations } = calculateCompatibility(pet.breed, targetPet.breed);
             return {
                 petId: pet.pet_id,
                 petName: pet.petname, // Assuming there is a 'name' field in the Pet model
+                breed: (_a = pet.breed) === null || _a === void 0 ? void 0 : _a.breedName,
                 pet_url: pet.pet_url,
                 compatibilityPercentage: percentage,
                 explanations, // Detailed explanations for each trait
