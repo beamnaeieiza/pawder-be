@@ -57,9 +57,13 @@ export const uploadProfileImage = async (req: Request, res: Response) => {
 
 export const createPetWithImage = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
-  let { breed_id,petname,gender,age,pet_description } = req.body;
+  let { breed_id,petname,gender,age,pet_description, mixed_breed, habitId } = req.body;
   breed_id = parseInt(breed_id);
   age = parseFloat(age);
+
+  if (!Array.isArray(habitId)) {
+    return res.status(400).json({ error: 'habitId are required or need to be array.' });
+  }
 
   try {
     const file = req.file;
@@ -89,7 +93,11 @@ export const createPetWithImage = async (req: Request, res: Response) => {
             pet_description,
             pet_url : imageUrl,
             gender,
+            mixed_breed: mixed_breed,
             age : parseFloat(age),
+            habits: {
+              connect: habitId.map((habitId: number) => ({ habit_id: parseInt(habitId.toString()) })),
+            }
 
         },
       },

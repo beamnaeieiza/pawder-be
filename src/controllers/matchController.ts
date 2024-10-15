@@ -41,7 +41,11 @@ export const randomPet = async (req: Request, res: Response) => {
         },
       },
       include: {
-        pets: true,
+        pets: {
+          include: {
+            habits: true
+          }
+        },
       },
       // skip: randomIndex,
       take: 10,

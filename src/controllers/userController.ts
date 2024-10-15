@@ -184,6 +184,12 @@ export const getDogById = async (req: Request, res: Response) => {
             breedName: true,
           },
         },
+        habits: {
+          select: {
+            habit_id: true,
+            habit_name: true,
+          },
+        },
       },
     });
     if (!pet) {
@@ -229,9 +235,14 @@ export const updateUser = async (req: Request, res: Response) => {
 //Create pet Profile
 export const createPet = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
-  let { breed_id, petname, pet_url, gender, age, pet_description } = req.body;
+  let { breed_id, petname, pet_url, gender, age, pet_description, mixed_breed, habitId } = req.body;
   breed_id = parseInt(breed_id);
   age = parseFloat(age);
+
+  if (!Array.isArray(habitId)) {
+    return res.status(400).json({ error: 'habitId are required or need to be array.' });
+  }
+
   try {
     const user = await prisma.user.update({
       where: { user_id: parseInt(id) },
@@ -243,7 +254,11 @@ export const createPet = async (req: Request, res: Response) => {
             pet_description,
             pet_url,
             gender,
+            mixed_breed: mixed_breed,
             age: parseFloat(age),
+            habits: {
+              connect: habitId.map((habitId: number) => ({ habit_id: parseInt(habitId.toString()) })),
+            }
           },
         },
       },
@@ -259,6 +274,33 @@ export const createPet = async (req: Request, res: Response) => {
   }
 };
 
+export const deletePet = async (req: Request, res: Response) => {
+  const id = (req as any).user.userId;
+  const { pet_id } = req.body;
+  try {
+    const pet = await prisma.pet.findUnique({
+      where: { pet_id: parseInt(pet_id) },
+    });
+
+    if (!pet) {
+      return res.status(404).json({ error: "Pet not found" });
+    }
+
+    if (pet.user_id !== id) {
+      return res.status(403).json({ error: "You are not the owner of this pet" });
+    }
+
+    await prisma.pet.delete({
+      where: { pet_id: parseInt(pet_id) },
+    });
+    res.status(204).send();
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Failed to delete pet" });
+  }
+}
+
+
 export const getPetList = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
   try {
@@ -266,6 +308,7 @@ export const getPetList = async (req: Request, res: Response) => {
       where: { user_id: parseInt(id) },
       include: {
         breed: true,
+        habits: true,
       },
     });
     res.json(pet);
@@ -341,3 +384,21 @@ export const getStatistic = async (req: Request, res: Response) => {
       .json({ error: "Failed to retrieve user saved information." });
   }
 };
+
+
+export const updateLocation = async (req: Request, res: Response) => {
+  const id = (req as any).user.userId;
+  const { location_latitude, location_longitude } = req.body;
+  try {
+    const user = await prisma.user.update({
+      where: { user_id: parseInt(id) },
+      data: {
+        location_latitude,
+        location_longitude,
+      },
+    });
+    res.json(user);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update user" });
+  }
+}

@@ -11,7 +11,9 @@ import {
   getStatistic,
   getDogById,
   getUserIdInfo,
-  getUserLikeByList
+  getUserLikeByList,
+  deletePet,
+  updateLocation
 } from "../controllers/userController";
 import { uploadProfileImage, createPetWithImage } from "../controllers/imageController";
 import { createComment } from "../controllers/ratingController";
@@ -40,5 +42,8 @@ router.post("/users/createPetWithImage", upload.single('file'), authMiddleware, 
 
 router.get("/users/getStatistic", authMiddleware, getStatistic);
 router.get("/users/getUserLikeByList", authMiddleware, getUserLikeByList);
+
+router.post("/users/deletePet", authMiddleware, deletePet);
+router.post("/users/updateLocation", authMiddleware, updateLocation);
 
 export default router;

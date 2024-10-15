@@ -49,7 +49,11 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 },
             },
             include: {
-                pets: true,
+                pets: {
+                    include: {
+                        habits: true
+                    }
+                },
             },
             // skip: randomIndex,
             take: 10,

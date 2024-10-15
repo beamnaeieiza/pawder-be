@@ -14,6 +14,10 @@ export const getPetList = async (req: Request, res: Response) => {
   try {
     const pet = await prisma.pet.findMany({
       where: { user_id: parseInt(id) },
+      include: {
+        breed: true,
+        habits: true,
+      }
   });
     res.json(pet);
   } catch (error) {

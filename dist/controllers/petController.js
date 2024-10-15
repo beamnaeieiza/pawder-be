@@ -24,6 +24,10 @@ const getPetList = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     try {
         const pet = yield prisma.pet.findMany({
             where: { user_id: parseInt(id) },
+            include: {
+                breed: true,
+                habits: true,
+            }
         });
         res.json(pet);
     }

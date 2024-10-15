@@ -52,12 +52,22 @@ model Pet {
   gender             Gender?
   age                Float?
   size               Size?
+  weight             Float?
+  height             Float?
   rating             Float?
+  mixed_breed        String?
   user               User                 @relation(fields: [user_id], references: [user_id])
   breed     Pet_Breed? @relation(fields: [breed_id], references: [breed_id]) 
+  habits  Pet_Habit[]  @relation("PetHabits")
   // Pet_Breed_Relation Pet_Breed_Relation[]
 
   @@index([user_id], map: "Pet_user_id_fkey")
+}
+
+model Pet_Habit {
+  habit_id Int     @id
+  habit_name String
+  pets      Pet[]  @relation("PetHabits")
 }
 
 model Rating {

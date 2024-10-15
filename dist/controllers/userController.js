@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getStatistic = exports.getUserLikeByList = exports.deleteUser = exports.getPetList = exports.createPet = exports.updateUser = exports.getDogById = exports.getUserIdInfo = exports.getUserById = exports.getUsers = exports.login = exports.signUp = void 0;
+exports.updateLocation = exports.getStatistic = exports.getUserLikeByList = exports.deleteUser = exports.getPetList = exports.deletePet = exports.createPet = exports.updateUser = exports.getDogById = exports.getUserIdInfo = exports.getUserById = exports.getUsers = exports.login = exports.signUp = void 0;
 const client_1 = require("@prisma/client");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -182,6 +182,12 @@ const getDogById = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                         breedName: true,
                     },
                 },
+                habits: {
+                    select: {
+                        habit_id: true,
+                        habit_name: true,
+                    },
+                },
             },
         });
         if (!pet) {
@@ -221,9 +227,12 @@ exports.updateUser = updateUser;
 //Create pet Profile
 const createPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
-    let { breed_id, petname, pet_url, gender, age, pet_description } = req.body;
+    let { breed_id, petname, pet_url, gender, age, pet_description, mixed_breed, habitId } = req.body;
     breed_id = parseInt(breed_id);
     age = parseFloat(age);
+    if (!Array.isArray(habitId)) {
+        return res.status(400).json({ error: 'habitId are required or need to be array.' });
+    }
     try {
         const user = yield prisma.user.update({
             where: { user_id: parseInt(id) },
@@ -235,7 +244,11 @@ const createPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                         pet_description,
                         pet_url,
                         gender,
+                        mixed_breed: mixed_breed,
                         age: parseFloat(age),
+                        habits: {
+                            connect: habitId.map((habitId) => ({ habit_id: parseInt(habitId.toString()) })),
+                        }
                     },
                 },
             },
@@ -251,6 +264,30 @@ const createPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.createPet = createPet;
+const deletePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    const { pet_id } = req.body;
+    try {
+        const pet = yield prisma.pet.findUnique({
+            where: { pet_id: parseInt(pet_id) },
+        });
+        if (!pet) {
+            return res.status(404).json({ error: "Pet not found" });
+        }
+        if (pet.user_id !== id) {
+            return res.status(403).json({ error: "You are not the owner of this pet" });
+        }
+        yield prisma.pet.delete({
+            where: { pet_id: parseInt(pet_id) },
+        });
+        res.status(204).send();
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to delete pet" });
+    }
+});
+exports.deletePet = deletePet;
 const getPetList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
     try {
@@ -258,6 +295,7 @@ const getPetList = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             where: { user_id: parseInt(id) },
             include: {
                 breed: true,
+                habits: true,
             },
         });
         res.json(pet);
@@ -332,3 +370,21 @@ const getStatistic = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.getStatistic = getStatistic;
+const updateLocation = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    const { location_latitude, location_longitude } = req.body;
+    try {
+        const user = yield prisma.user.update({
+            where: { user_id: parseInt(id) },
+            data: {
+                location_latitude,
+                location_longitude,
+            },
+        });
+        res.json(user);
+    }
+    catch (error) {
+        res.status(500).json({ error: "Failed to update user" });
+    }
+});
+exports.updateLocation = updateLocation;

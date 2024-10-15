@@ -27,4 +27,6 @@ router.post("/users/uploadProfileImage", upload.single('file'), authMiddleware_1
 router.post("/users/createPetWithImage", upload.single('file'), authMiddleware_1.default, imageController_1.createPetWithImage);
 router.get("/users/getStatistic", authMiddleware_1.default, userController_1.getStatistic);
 router.get("/users/getUserLikeByList", authMiddleware_1.default, userController_1.getUserLikeByList);
+router.post("/users/deletePet", authMiddleware_1.default, userController_1.deletePet);
+router.post("/users/updateLocation", authMiddleware_1.default, userController_1.updateLocation);
 exports.default = router;
