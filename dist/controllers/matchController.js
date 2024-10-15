@@ -145,6 +145,12 @@ const likePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     target_user_id: target_user_id,
                 },
             });
+            const newMet = yield prisma.user_HaveMet.create({
+                data: {
+                    user_id: userId,
+                    met_user_id: target_user_id,
+                },
+            });
             res.status(201).json(newLike);
         }
     }
