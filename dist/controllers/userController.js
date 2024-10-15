@@ -20,7 +20,7 @@ dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET;
 const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, username, password, phone_number, firstname, lastname, gender, birthdate } = req.body;
+    const { email, username, password, phone_number, firstname, lastname, gender, birthdate, } = req.body;
     try {
         const existingUser = yield prisma.user.findFirst({
             where: { email: email },
@@ -62,7 +62,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return res.status(401).json({ error: "Invalid password" });
         }
         const token = jsonwebtoken_1.default.sign({ userId: existingUser.user_id, username: existingUser.username }, JWT_SECRET, {
-            expiresIn: "1h",
+            expiresIn: "24h",
         });
         res.status(200).json({ token: token });
     }
@@ -118,9 +118,9 @@ const getUserIdInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                             select: {
                                 breed_id: true,
                                 breedName: true,
-                            }
-                        }
-                    }
+                            },
+                        },
+                    },
                 },
                 // rating: {
                 // where: { user_id: parseInt(user_id) },
@@ -136,7 +136,7 @@ const getUserIdInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 //     },
                 //   }
                 // }
-            }
+            },
         });
         const rating = yield prisma.rating.findMany({
             where: { user_id: parseInt(user_id) },
@@ -147,10 +147,10 @@ const getUserIdInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                         username: true,
                         firstname: true,
                         lastname: true,
-                        profile_url: true
-                    }
+                        profile_url: true,
+                    },
                 },
-            }
+            },
         });
         if (!user) {
             return res.status(404).json({ message: "User not found" });
@@ -180,9 +180,9 @@ const getDogById = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                     select: {
                         breed_id: true,
                         breedName: true,
-                    }
-                }
-            }
+                    },
+                },
+            },
         });
         if (!pet) {
             return res.status(404).json({ message: "Pet not found" });
@@ -197,7 +197,7 @@ exports.getDogById = getDogById;
 // Update a user by ID
 const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
-    const { firstname, lastname, email, gender, birthdate, location_latitude, location_longitude } = req.body;
+    const { firstname, lastname, email, gender, birthdate, location_latitude, location_longitude, } = req.body;
     try {
         const user = yield prisma.user.update({
             where: { user_id: parseInt(id) },
@@ -208,7 +208,7 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 gender,
                 birthdate,
                 location_latitude,
-                location_longitude
+                location_longitude,
             },
         });
         res.json(user);
@@ -235,7 +235,7 @@ const createPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                         pet_description,
                         pet_url,
                         gender,
-                        age: parseFloat(age)
+                        age: parseFloat(age),
                     },
                 },
             },
@@ -257,8 +257,8 @@ const getPetList = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
         const pet = yield prisma.pet.findMany({
             where: { user_id: parseInt(id) },
             include: {
-                breed: true
-            }
+                breed: true,
+            },
         });
         res.json(pet);
     }
@@ -295,9 +295,9 @@ const getUserLikeByList = (req, res) => __awaiter(void 0, void 0, void 0, functi
                         firstname: true,
                         lastname: true,
                         profile_url: true,
-                    }
-                }
-            }
+                    },
+                },
+            },
         });
         res.json(likeList);
     }
@@ -318,10 +318,7 @@ const getStatistic = (req, res) => __awaiter(void 0, void 0, void 0, function* (
         });
         const totalMatches = yield prisma.match.count({
             where: {
-                OR: [
-                    { user_id1: id },
-                    { user_id2: id },
-                ],
+                OR: [{ user_id1: id }, { user_id2: id }],
             },
         });
         const totalNotMatches = totalSwipes - totalMatches;
@@ -329,7 +326,9 @@ const getStatistic = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
     catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Failed to retrieve user saved information." });
+        res
+            .status(500)
+            .json({ error: "Failed to retrieve user saved information." });
     }
 });
 exports.getStatistic = getStatistic;

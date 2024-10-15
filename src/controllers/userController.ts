@@ -9,8 +9,16 @@ const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
 export const signUp = async (req: Request, res: Response) => {
-  const { email, username, password, phone_number, firstname, lastname, gender, birthdate } =
-    req.body;
+  const {
+    email,
+    username,
+    password,
+    phone_number,
+    firstname,
+    lastname,
+    gender,
+    birthdate,
+  } = req.body;
   try {
     const existingUser = await prisma.user.findFirst({
       where: { email: email },
@@ -59,7 +67,7 @@ export const login = async (req: Request, res: Response) => {
       { userId: existingUser.user_id, username: existingUser.username },
       JWT_SECRET,
       {
-        expiresIn: "1h",
+        expiresIn: "24h",
       }
     );
 
@@ -100,9 +108,9 @@ export const getUserIdInfo = async (req: Request, res: Response) => {
   let { user_id } = req.query;
   if (user_id) {
     user_id = user_id.toString();
-} else {
+  } else {
     return res.status(400).json({ error: "user_id is required" });
-}
+  }
   try {
     const user = await prisma.user.findUnique({
       where: { user_id: parseInt(user_id) },
@@ -113,12 +121,12 @@ export const getUserIdInfo = async (req: Request, res: Response) => {
               select: {
                 breed_id: true,
                 breedName: true,
-              }
-            }
-          }
+              },
+            },
+          },
         },
         // rating: {
-          // where: { user_id: parseInt(user_id) },
+        // where: { user_id: parseInt(user_id) },
         //   include: {
         //     rating_user : {
         //       select : {
@@ -131,53 +139,52 @@ export const getUserIdInfo = async (req: Request, res: Response) => {
         //     },
         //   }
         // }
-
-      }
+      },
     });
 
     const rating = await prisma.rating.findMany({
       where: { user_id: parseInt(user_id) },
       include: {
-        rating_user : {
-          select : {
-            user_id : true,
-            username : true,
-            firstname : true,
-            lastname : true,
-            profile_url : true
-          }
+        rating_user: {
+          select: {
+            user_id: true,
+            username: true,
+            firstname: true,
+            lastname: true,
+            profile_url: true,
+          },
         },
-      }
+      },
     });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.json({user, rating});
+    res.json({ user, rating });
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch user" });
   }
-}
+};
 
 export const getDogById = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
   let { pet_id } = req.query;
   if (pet_id) {
     pet_id = pet_id.toString();
-} else {
+  } else {
     return res.status(400).json({ error: "pet_id is required" });
-}
+  }
   try {
     const pet = await prisma.pet.findUnique({
       where: { pet_id: parseInt(pet_id) },
-    include: {
-      user: true,
-      breed: {
-        select: {
-          breed_id: true,
-          breedName: true,
-        }
-      }
-    }
+      include: {
+        user: true,
+        breed: {
+          select: {
+            breed_id: true,
+            breedName: true,
+          },
+        },
+      },
     });
     if (!pet) {
       return res.status(404).json({ message: "Pet not found" });
@@ -191,9 +198,16 @@ export const getDogById = async (req: Request, res: Response) => {
 // Update a user by ID
 export const updateUser = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
-  const { firstname, lastname, email,gender, birthdate, location_latitude, location_longitude } = req.body;
+  const {
+    firstname,
+    lastname,
+    email,
+    gender,
+    birthdate,
+    location_latitude,
+    location_longitude,
+  } = req.body;
   try {
-    
     const user = await prisma.user.update({
       where: { user_id: parseInt(id) },
       data: {
@@ -203,7 +217,7 @@ export const updateUser = async (req: Request, res: Response) => {
         gender,
         birthdate,
         location_latitude,
-        location_longitude
+        location_longitude,
       },
     });
     res.json(user);
@@ -215,7 +229,7 @@ export const updateUser = async (req: Request, res: Response) => {
 //Create pet Profile
 export const createPet = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
-  let { breed_id,petname,pet_url,gender,age,pet_description } = req.body;
+  let { breed_id, petname, pet_url, gender, age, pet_description } = req.body;
   breed_id = parseInt(breed_id);
   age = parseFloat(age);
   try {
@@ -229,19 +243,18 @@ export const createPet = async (req: Request, res: Response) => {
             pet_description,
             pet_url,
             gender,
-            age : parseFloat(age)
-
+            age: parseFloat(age),
+          },
         },
       },
-    },
-  });
+    });
 
-  const pet = await prisma.pet.findMany({
-    where: { user_id: parseInt(id) },
-  });
+    const pet = await prisma.pet.findMany({
+      where: { user_id: parseInt(id) },
+    });
     res.json(pet);
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).json({ error: "Failed to update user" });
   }
 };
@@ -252,12 +265,12 @@ export const getPetList = async (req: Request, res: Response) => {
     const pet = await prisma.pet.findMany({
       where: { user_id: parseInt(id) },
       include: {
-        breed: true
-      }
-  })
+        breed: true,
+      },
+    });
     res.json(pet);
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).json({ error: "Failed to update user" });
   }
 };
@@ -288,24 +301,22 @@ export const getUserLikeByList = async (req: Request, res: Response) => {
             firstname: true,
             lastname: true,
             profile_url: true,
-          }
-        }
-      }
+          },
+        },
+      },
     });
 
     res.json(likeList);
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).json({ error: "Failed to get like information" });
   }
-}
-
+};
 
 export const getStatistic = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
 
   try {
-
     const totalSwipes = await prisma.user_Interest.count({
       where: { user_id: id },
     });
@@ -316,19 +327,17 @@ export const getStatistic = async (req: Request, res: Response) => {
 
     const totalMatches = await prisma.match.count({
       where: {
-        OR: [
-          { user_id1: id },
-          { user_id2: id },
-        ],
+        OR: [{ user_id1: id }, { user_id2: id }],
       },
     });
 
     const totalNotMatches = totalSwipes - totalMatches;
-    
 
-    res.json({totalSwipes, totalMatches, totalNotMatches, totalLikes});
+    res.json({ totalSwipes, totalMatches, totalNotMatches, totalLikes });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: "Failed to retrieve user saved information." });
+    res
+      .status(500)
+      .json({ error: "Failed to retrieve user saved information." });
   }
 };
