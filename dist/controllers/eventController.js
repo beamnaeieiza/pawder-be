@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.editEvent = exports.enrollEvent = exports.createEvent = exports.getEnrollList = exports.getEventInfo = exports.getEventList = void 0;
+exports.deleteEvent = exports.editEvent = exports.enrollEvent = exports.createEvent = exports.getEnrollList = exports.getEventInfo = exports.getEventList = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
@@ -211,3 +211,28 @@ const editEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.editEvent = editEvent;
+const deleteEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    let { event_id } = req.body;
+    event_id = parseInt(event_id);
+    try {
+        const existingEvent = yield prisma.event.findUnique({
+            where: { event_id: event_id }
+        });
+        if (!existingEvent) {
+            return res.status(404).json({ error: "Event not found" });
+        }
+        if (existingEvent.owner_id !== id) {
+            return res.status(403).json({ error: "You are not the owner of this event" });
+        }
+        const event = yield prisma.event.delete({
+            where: { event_id: event_id }
+        });
+        res.json("Event removed");
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to remove event" });
+    }
+});
+exports.deleteEvent = deleteEvent;

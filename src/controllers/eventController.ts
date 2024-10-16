@@ -210,3 +210,31 @@ export const editEvent = async (req: Request, res: Response) => {
         res.status(500).json({ error: "Failed to edit event" });
     }
 };
+
+export const deleteEvent = async (req: Request, res: Response) => {
+    const id = (req as any).user.userId;
+    let { event_id } = req.body;
+    event_id = parseInt(event_id);
+    try {
+        const existingEvent = await prisma.event.findUnique({
+            where: { event_id: event_id }
+        });
+
+        if (!existingEvent) {
+            return res.status(404).json({ error: "Event not found" });
+        }
+
+          if (existingEvent.owner_id !== id) {
+            return res.status(403).json({ error: "You are not the owner of this event" });
+        }
+
+        const event = await prisma.event.delete({
+            where: { event_id: event_id }
+        });
+
+        res.json("Event removed");
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to remove event" });
+    }
+}

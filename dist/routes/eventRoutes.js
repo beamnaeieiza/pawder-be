@@ -17,6 +17,7 @@ router.get(`${routeType}/getEnrollList`, authMiddleware_1.default, eventControll
 router.post(`${routeType}/createEvent`, authMiddleware_1.default, eventController_1.createEvent);
 router.post(`${routeType}/enrollEvent`, authMiddleware_1.default, eventController_1.enrollEvent);
 router.post(`${routeType}/editEvent`, authMiddleware_1.default, eventController_1.editEvent);
+router.post(`${routeType}/deleteEvent`, authMiddleware_1.default, eventController_1.deleteEvent);
 router.post(`${routeType}/createEventWithImage`, upload.single('file'), authMiddleware_1.default, imageController_1.createEventWithImage);
 router.post(`${routeType}/updateEventWithImage`, upload.single('file'), authMiddleware_1.default, imageController_1.updateEventWithImage);
 exports.default = router;
