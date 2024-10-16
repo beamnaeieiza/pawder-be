@@ -232,7 +232,7 @@ export const deleteEvent = async (req: Request, res: Response) => {
             where: { event_id: event_id }
         });
 
-        res.json("Event removed");
+        res.status(204).send();
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: "Failed to remove event" });

@@ -228,7 +228,7 @@ const deleteEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         const event = yield prisma.event.delete({
             where: { event_id: event_id }
         });
-        res.json("Event removed");
+        res.status(204).send();
     }
     catch (error) {
         console.log(error);
