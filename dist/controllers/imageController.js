@@ -59,7 +59,7 @@ const uploadProfileImage = (req, res) => __awaiter(void 0, void 0, void 0, funct
 exports.uploadProfileImage = uploadProfileImage;
 const createPetWithImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
-    let { breed_id, petname, gender, age, pet_description, mixed_breed, habitId } = req.body;
+    let { breed_id, petname, gender, age, pet_description, mixed_breed, habitId, height, weight } = req.body;
     breed_id = parseInt(breed_id);
     age = parseFloat(age);
     if (!Array.isArray(habitId)) {
@@ -86,6 +86,8 @@ const createPetWithImage = (req, res) => __awaiter(void 0, void 0, void 0, funct
                         breed_id: parseInt(breed_id),
                         petname,
                         pet_description,
+                        height: parseFloat(height),
+                        weight: parseFloat(weight),
                         pet_url: imageUrl,
                         gender,
                         mixed_breed: mixed_breed,

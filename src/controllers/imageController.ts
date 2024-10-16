@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import { BlobServiceClient } from "@azure/storage-blob";
 import multer from "multer";
 import { v4 as uuidv4 } from 'uuid';
+import { parse } from "path";
 
 dotenv.config();
 
@@ -57,7 +58,7 @@ export const uploadProfileImage = async (req: Request, res: Response) => {
 
 export const createPetWithImage = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
-  let { breed_id,petname,gender,age,pet_description, mixed_breed, habitId } = req.body;
+  let { breed_id,petname,gender,age,pet_description, mixed_breed, habitId, height, weight } = req.body;
   breed_id = parseInt(breed_id);
   age = parseFloat(age);
 
@@ -91,6 +92,8 @@ export const createPetWithImage = async (req: Request, res: Response) => {
             breed_id: parseInt(breed_id),
             petname,
             pet_description,
+            height : parseFloat(height),
+            weight : parseFloat(weight),
             pet_url : imageUrl,
             gender,
             mixed_breed: mixed_breed,
