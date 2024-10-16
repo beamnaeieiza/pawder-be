@@ -225,8 +225,11 @@ const deleteEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         if (existingEvent.owner_id !== id) {
             return res.status(403).json({ error: "You are not the owner of this event" });
         }
-        const event = yield prisma.event.delete({
+        yield prisma.event_UserEnrolled.deleteMany({
             where: { event_id: event_id }
+        });
+        const event = yield prisma.event.delete({
+            where: { event_id: event_id },
         });
         res.status(204).send();
     }

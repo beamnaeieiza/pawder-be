@@ -228,8 +228,12 @@ export const deleteEvent = async (req: Request, res: Response) => {
             return res.status(403).json({ error: "You are not the owner of this event" });
         }
 
-        const event = await prisma.event.delete({
+        await prisma.event_UserEnrolled.deleteMany({
             where: { event_id: event_id }
+        });
+
+        const event = await prisma.event.delete({
+            where: { event_id: event_id },
         });
 
         res.status(204).send();
