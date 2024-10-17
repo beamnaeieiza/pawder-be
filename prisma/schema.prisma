@@ -25,7 +25,7 @@ model User {
   updatedAt          DateTime?            @updatedAt
   gender             String?
   birthdate          DateTime?
-  distance_interest  String?
+  distance_interest  String?              @default("10")
   events_owned       Event[]              @relation("OwnerEvents")
   events_enrolled    Event_UserEnrolled[]
   matchesAsUser1     Match[]              @relation("UserMatches")
