@@ -94,6 +94,21 @@ export const getUserById = async (req: Request, res: Response) => {
   try {
     const user = await prisma.user.findUnique({
       where: { user_id: parseInt(id) },
+      select: {
+        user_id: true,
+        username: true,
+        firstname: true,
+        lastname: true,
+        profile_url: true,
+        email: true,
+        verify_status: true,
+        subscription: true,
+        location_latitude: true,
+        location_longitude: true,
+        gender: true,
+        birthdate: true,
+        distance_interest: true,
+      },
     });
     if (!user) {
       return res.status(404).json({ message: "User not found" });
@@ -114,7 +129,20 @@ export const getUserIdInfo = async (req: Request, res: Response) => {
   try {
     const user = await prisma.user.findUnique({
       where: { user_id: parseInt(user_id) },
-      include: {
+      select: {
+        user_id: true,
+        username: true,
+        firstname: true,
+        lastname: true,
+        profile_url: true,
+        email: true,
+        verify_status: true,
+        subscription: true,
+        location_latitude: true,
+        location_longitude: true,
+        gender: true,
+        birthdate: true,
+        distance_interest: true,
         pets: {
           include: {
             breed: {
@@ -125,20 +153,6 @@ export const getUserIdInfo = async (req: Request, res: Response) => {
             },
           },
         },
-        // rating: {
-        // where: { user_id: parseInt(user_id) },
-        //   include: {
-        //     rating_user : {
-        //       select : {
-        //         user_id : true,
-        //         username : true,
-        //         firstname : true,
-        //         lastname : true,
-        //         profile_url : true
-        //       }
-        //     },
-        //   }
-        // }
       },
     });
 
@@ -235,12 +249,23 @@ export const updateUser = async (req: Request, res: Response) => {
 //Create pet Profile
 export const createPet = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
-  let { breed_id, petname, pet_url, gender, age, pet_description, mixed_breed, habitId } = req.body;
+  let {
+    breed_id,
+    petname,
+    pet_url,
+    gender,
+    age,
+    pet_description,
+    mixed_breed,
+    habitId,
+  } = req.body;
   breed_id = parseInt(breed_id);
   age = parseFloat(age);
 
   if (!Array.isArray(habitId)) {
-    return res.status(400).json({ error: 'habitId are required or need to be array.' });
+    return res
+      .status(400)
+      .json({ error: "habitId are required or need to be array." });
   }
 
   try {
@@ -257,8 +282,10 @@ export const createPet = async (req: Request, res: Response) => {
             mixed_breed: mixed_breed,
             age: parseFloat(age),
             habits: {
-              connect: habitId.map((habitId: number) => ({ habit_id: parseInt(habitId.toString()) })),
-            }
+              connect: habitId.map((habitId: number) => ({
+                habit_id: parseInt(habitId.toString()),
+              })),
+            },
           },
         },
       },
@@ -287,7 +314,9 @@ export const deletePet = async (req: Request, res: Response) => {
     }
 
     if (pet.user_id !== id) {
-      return res.status(403).json({ error: "You are not the owner of this pet" });
+      return res
+        .status(403)
+        .json({ error: "You are not the owner of this pet" });
     }
 
     await prisma.pet.delete({
@@ -298,8 +327,7 @@ export const deletePet = async (req: Request, res: Response) => {
     console.log(error);
     res.status(500).json({ error: "Failed to delete pet" });
   }
-}
-
+};
 
 export const getPetList = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
@@ -385,7 +413,6 @@ export const getStatistic = async (req: Request, res: Response) => {
   }
 };
 
-
 export const updateLocation = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
   const { location_latitude, location_longitude } = req.body;
@@ -401,4 +428,20 @@ export const updateLocation = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ error: "Failed to update user" });
   }
-}
+};
+
+export const updateDistanceInterest = async (req: Request, res: Response) => {
+  const id = (req as any).user.userId;
+  const { distance_interest } = req.body;
+  try {
+    const user = await prisma.user.update({
+      where: { user_id: parseInt(id) },
+      data: {
+        distance_interest,
+      },
+    });
+    res.json("Updated distance interest successfully");
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update user" });
+  }
+};

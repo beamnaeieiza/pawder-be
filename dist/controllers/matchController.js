@@ -15,17 +15,35 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserSaved = exports.getUserNotInterests = exports.getUserInterests = exports.savePet = exports.notLikePet = exports.likePet = exports.randomPet = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
+const haversine_distance_1 = __importDefault(require("haversine-distance"));
 dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET;
 const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
     try {
+        const user = yield prisma.user.findUnique({
+            where: { user_id: id },
+            select: {
+                location_latitude: true,
+                location_longitude: true,
+                distance_interest: true,
+            },
+        });
+        if (!user ||
+            !user.location_latitude === null ||
+            !user.location_longitude === null) {
+            return res.status(404).json({ error: "User location not found." });
+        }
+        const userLocation = {
+            latitude: parseFloat(user.location_latitude),
+            longitude: parseFloat(user.location_longitude),
+        };
         const metPets = yield prisma.user_HaveMet.findMany({
             where: { user_id: id },
             select: { met_user_id: true }, // Select only the met_pet_id
         });
-        const metPetIds = metPets.map(met => met.met_user_id);
+        const metPetIds = metPets.map((met) => met.met_user_id);
         const totalCount = yield prisma.user.count({
             where: {
                 NOT: {
@@ -40,7 +58,7 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         const randomIndex = Math.floor(Math.random() * totalCount);
         // console.log(`Total Count: ${totalCount}, Random Index: ${randomIndex}`);
-        const randomPet = yield prisma.user.findMany({
+        const potentialPets = yield prisma.user.findMany({
             where: {
                 NOT: {
                     user_id: {
@@ -51,16 +69,33 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             include: {
                 pets: {
                     include: {
-                        habits: true
-                    }
+                        habits: true,
+                    },
                 },
             },
-            // skip: randomIndex,
-            take: 10,
         });
-        const usersWithPets = randomPet.filter(user => {
+        const usersWithinDistance = potentialPets
+            .filter((petUser) => {
+            if (petUser.location_latitude === null ||
+                petUser.location_longitude === null)
+                return false;
+            const petUserLocation = {
+                latitude: parseFloat(petUser.location_latitude),
+                longitude: parseFloat(petUser.location_longitude),
+            };
+            const distance = (0, haversine_distance_1.default)(userLocation, petUserLocation);
+            return distance <= parseFloat(user.distance_interest) * 1000; // 10km in meters
+        })
+            .map((metUser) => {
+            const distanceInMeters = (0, haversine_distance_1.default)(userLocation, {
+                latitude: parseFloat(metUser.location_latitude),
+                longitude: parseFloat(metUser.location_longitude),
+            });
+            const distanceInKm = (distanceInMeters / 1000).toFixed(2); // Convert meters to kilometers
+            return Object.assign(Object.assign({}, metUser), { distance: distanceInKm });
+        });
+        const usersWithPets = usersWithinDistance.filter((user) => {
             const hasPets = Array.isArray(user.pets) && user.pets.length > 0;
-            // console.log('User:', user.email, 'Has Pets:', hasPets);
             return hasPets;
         });
         const shuffledUsers = usersWithPets.sort(() => 0.5 - Math.random());
@@ -89,7 +124,9 @@ const likePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             },
         });
         if (existingLike) {
-            return res.status(409).json({ error: "You have already liked this user." });
+            return res
+                .status(409)
+                .json({ error: "You have already liked this user." });
         }
         const likeToMatch = yield prisma.user_Interest.findUnique({
             where: {
@@ -119,26 +156,26 @@ const likePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 },
             });
             const user = yield prisma.user.findUnique({
-                where: { user_id: parseInt(userId) }
+                where: { user_id: parseInt(userId) },
             });
             const userTarget = yield prisma.user.findUnique({
-                where: { user_id: parseInt(target_user_id) }
+                where: { user_id: parseInt(target_user_id) },
             });
             const notification = yield prisma.notification.create({
                 data: {
                     user_id: userId,
                     title: "New Match",
                     message: "You have match with " + (userTarget === null || userTarget === void 0 ? void 0 : userTarget.firstname),
-                    read_status: false
-                }
+                    read_status: false,
+                },
             });
             const notification2 = yield prisma.notification.create({
                 data: {
                     user_id: target_user_id,
                     title: "New Match",
                     message: "You have match with " + (user === null || user === void 0 ? void 0 : user.firstname),
-                    read_status: false
-                }
+                    read_status: false,
+                },
             });
             res.status(201).json(newMatch);
         }
@@ -181,7 +218,9 @@ const notLikePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
             },
         });
         if (existingDislike) {
-            return res.status(409).json({ error: "You have already disliked this user." });
+            return res
+                .status(409)
+                .json({ error: "You have already disliked this user." });
         }
         const newMet = yield prisma.user_HaveMet.create({
             data: {
@@ -220,7 +259,9 @@ const savePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             },
         });
         if (existingSaved) {
-            return res.status(409).json({ error: "You have already saved this user." });
+            return res
+                .status(409)
+                .json({ error: "You have already saved this user." });
         }
         const newMet = yield prisma.user_HaveMet.create({
             data: {
@@ -265,13 +306,15 @@ const getUserInterests = (req, res) => __awaiter(void 0, void 0, void 0, functio
                                     },
                                 },
                             },
-                        }
+                        },
                     },
-                }
+                },
             },
         });
         if (userInterests.length === 0) {
-            return res.status(404).json({ message: "No interests found for this user." });
+            return res
+                .status(404)
+                .json({ message: "No interests found for this user." });
         }
         res.json(userInterests);
     }
@@ -304,13 +347,15 @@ const getUserNotInterests = (req, res) => __awaiter(void 0, void 0, void 0, func
                                     },
                                 },
                             },
-                        }
+                        },
                     },
-                }
+                },
             },
         });
         if (userNotInterests.length === 0) {
-            return res.status(404).json({ message: "No not interests found for this user." });
+            return res
+                .status(404)
+                .json({ message: "No not interests found for this user." });
         }
         res.json(userNotInterests);
     }
@@ -343,9 +388,9 @@ const getUserSaved = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                                     },
                                 },
                             },
-                        }
+                        },
                     },
-                }
+                },
             },
         });
         if (userSaved.length === 0) {
@@ -355,7 +400,9 @@ const getUserSaved = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
     catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Failed to retrieve user saved information." });
+        res
+            .status(500)
+            .json({ error: "Failed to retrieve user saved information." });
     }
 });
 exports.getUserSaved = getUserSaved;
