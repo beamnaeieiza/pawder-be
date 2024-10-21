@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateLocation = exports.getStatistic = exports.getUserLikeByList = exports.deleteUser = exports.getPetList = exports.deletePet = exports.createPet = exports.updateUser = exports.getDogById = exports.getUserIdInfo = exports.getUserById = exports.getUsers = exports.login = exports.signUp = void 0;
+exports.updateDistanceInterest = exports.updateLocation = exports.getStatistic = exports.getUserLikeByList = exports.deleteUser = exports.getPetList = exports.deletePet = exports.createPet = exports.updateUser = exports.getDogById = exports.getUserIdInfo = exports.getUserById = exports.getUsers = exports.login = exports.signUp = void 0;
 const client_1 = require("@prisma/client");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -89,6 +89,21 @@ const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     try {
         const user = yield prisma.user.findUnique({
             where: { user_id: parseInt(id) },
+            select: {
+                user_id: true,
+                username: true,
+                firstname: true,
+                lastname: true,
+                profile_url: true,
+                email: true,
+                verify_status: true,
+                subscription: true,
+                location_latitude: true,
+                location_longitude: true,
+                gender: true,
+                birthdate: true,
+                distance_interest: true,
+            },
         });
         if (!user) {
             return res.status(404).json({ message: "User not found" });
@@ -111,7 +126,20 @@ const getUserIdInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* 
     try {
         const user = yield prisma.user.findUnique({
             where: { user_id: parseInt(user_id) },
-            include: {
+            select: {
+                user_id: true,
+                username: true,
+                firstname: true,
+                lastname: true,
+                profile_url: true,
+                email: true,
+                verify_status: true,
+                subscription: true,
+                location_latitude: true,
+                location_longitude: true,
+                gender: true,
+                birthdate: true,
+                distance_interest: true,
                 pets: {
                     include: {
                         breed: {
@@ -122,20 +150,6 @@ const getUserIdInfo = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                         },
                     },
                 },
-                // rating: {
-                // where: { user_id: parseInt(user_id) },
-                //   include: {
-                //     rating_user : {
-                //       select : {
-                //         user_id : true,
-                //         username : true,
-                //         firstname : true,
-                //         lastname : true,
-                //         profile_url : true
-                //       }
-                //     },
-                //   }
-                // }
             },
         });
         const rating = yield prisma.rating.findMany({
@@ -227,11 +241,13 @@ exports.updateUser = updateUser;
 //Create pet Profile
 const createPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
-    let { breed_id, petname, pet_url, gender, age, pet_description, mixed_breed, habitId } = req.body;
+    let { breed_id, petname, pet_url, gender, age, pet_description, mixed_breed, habitId, } = req.body;
     breed_id = parseInt(breed_id);
     age = parseFloat(age);
     if (!Array.isArray(habitId)) {
-        return res.status(400).json({ error: 'habitId are required or need to be array.' });
+        return res
+            .status(400)
+            .json({ error: "habitId are required or need to be array." });
     }
     try {
         const user = yield prisma.user.update({
@@ -247,8 +263,10 @@ const createPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                         mixed_breed: mixed_breed,
                         age: parseFloat(age),
                         habits: {
-                            connect: habitId.map((habitId) => ({ habit_id: parseInt(habitId.toString()) })),
-                        }
+                            connect: habitId.map((habitId) => ({
+                                habit_id: parseInt(habitId.toString()),
+                            })),
+                        },
                     },
                 },
             },
@@ -275,7 +293,9 @@ const deletePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             return res.status(404).json({ error: "Pet not found" });
         }
         if (pet.user_id !== id) {
-            return res.status(403).json({ error: "You are not the owner of this pet" });
+            return res
+                .status(403)
+                .json({ error: "You are not the owner of this pet" });
         }
         yield prisma.pet.delete({
             where: { pet_id: parseInt(pet_id) },
@@ -388,3 +408,20 @@ const updateLocation = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.updateLocation = updateLocation;
+const updateDistanceInterest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    const { distance_interest } = req.body;
+    try {
+        const user = yield prisma.user.update({
+            where: { user_id: parseInt(id) },
+            data: {
+                distance_interest,
+            },
+        });
+        res.json("Updated distance interest successfully");
+    }
+    catch (error) {
+        res.status(500).json({ error: "Failed to update user" });
+    }
+});
+exports.updateDistanceInterest = updateDistanceInterest;

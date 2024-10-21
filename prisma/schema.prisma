@@ -25,58 +25,58 @@ model User {
   updatedAt          DateTime?            @updatedAt
   gender             String?
   birthdate          DateTime?
+  distance_interest  String?              @default("10")
   events_owned       Event[]              @relation("OwnerEvents")
   events_enrolled    Event_UserEnrolled[]
   matchesAsUser1     Match[]              @relation("UserMatches")
   matchesAsUser2     Match[]              @relation("UserMatches2")
-  chatAsUser1     Chat[]              @relation("UserChat")
-  chatAsUser2     Chat[]              @relation("UserChat2")
+  chatAsUser1        Chat[]               @relation("UserChat")
+  chatAsUser2        Chat[]               @relation("UserChat2")
   notifications      Notification[]
   pets               Pet[]
   user_dislike       User_Dislike[]
   user_haveMet       User_HaveMet[]
-  interests         User_Interest[] @relation(name: "TargetUser")
-  user_interest     User_Interest[] @relation(name: "OwnerUser")
+  interests          User_Interest[]      @relation(name: "TargetUser")
+  user_interest      User_Interest[]      @relation(name: "OwnerUser")
   user_saved         User_Saved[]
-  rating            Rating[]
-
+  rating             Rating[]
 }
 
 model Pet {
-  pet_id             Int                  @id @default(autoincrement())
-  user_id            Int
-  breed_id          Int?
-  pet_url            String?
-  petname            String?
-  pet_description    String?
-  gender             Gender?
-  age                Float?
-  size               Size?
-  weight             Float?
-  height             Float?
-  rating             Float?
-  mixed_breed        String?
-  user               User                 @relation(fields: [user_id], references: [user_id])
-  breed     Pet_Breed? @relation(fields: [breed_id], references: [breed_id]) 
-  habits  Pet_Habit[]  @relation("PetHabits")
+  pet_id          Int         @id @default(autoincrement())
+  user_id         Int
+  breed_id        Int?
+  pet_url         String?
+  petname         String?
+  pet_description String?
+  gender          Gender?
+  age             Float?
+  size            Size?
+  weight          Float?
+  height          Float?
+  rating          Float?
+  mixed_breed     String?
+  user            User        @relation(fields: [user_id], references: [user_id])
+  breed           Pet_Breed?  @relation(fields: [breed_id], references: [breed_id])
+  habits          Pet_Habit[] @relation("PetHabits")
   // Pet_Breed_Relation Pet_Breed_Relation[]
 
   @@index([user_id], map: "Pet_user_id_fkey")
 }
 
 model Pet_Habit {
-  habit_id Int     @id
+  habit_id   Int    @id
   habit_name String
-  pets      Pet[]  @relation("PetHabits")
+  pets       Pet[]  @relation("PetHabits")
 }
 
 model Rating {
-  rating_id          Int                  @id @default(autoincrement())
-  user_id            Int
-  from_user_id       Int
-  rating             Float?
-  comment            String?
-  rating_user        User                 @relation(fields: [from_user_id], references: [user_id])
+  rating_id    Int     @id @default(autoincrement())
+  user_id      Int
+  from_user_id Int
+  rating       Float?
+  comment      String?
+  rating_user  User    @relation(fields: [from_user_id], references: [user_id])
   // user               User                @relation(fields: [user_id], references: [user_id])
 
   @@index([user_id], map: "Rating_user_id_fkey")
@@ -114,39 +114,40 @@ model Notification {
 }
 
 model Match {
-  match_id   Int             @id @default(autoincrement())
-  user_id1   Int
-  user_id2   Int
-  createdAt  DateTime?       @default(now())
-  updatedAt  DateTime?       @updatedAt
-  user1 User            @relation("UserMatches", fields: [user_id1], references: [user_id])
-  user2 User            @relation("UserMatches2", fields: [user_id2], references: [user_id])
-
+  match_id  Int       @id @default(autoincrement())
+  user_id1  Int
+  user_id2  Int
+  createdAt DateTime? @default(now())
+  updatedAt DateTime? @updatedAt
+  user1     User      @relation("UserMatches", fields: [user_id1], references: [user_id])
+  user2     User      @relation("UserMatches2", fields: [user_id2], references: [user_id])
 
   @@index([user_id1], map: "Match_user_id1_fkey")
 }
+
 model Chat {
-  chat_id   Int             @id @default(autoincrement())
-  user_id1   Int
-  user_id2   Int
-  createdAt  DateTime?       @default(now())
-  updatedAt  DateTime?       @updatedAt
-  user1 User            @relation("UserChat", fields: [user_id1], references: [user_id])
-  user2 User            @relation("UserChat2", fields: [user_id2], references: [user_id])
-  messages   Chat_Message[]
+  chat_id   Int            @id @default(autoincrement())
+  user_id1  Int
+  user_id2  Int
+  createdAt DateTime?      @default(now())
+  updatedAt DateTime?      @updatedAt
+  user1     User           @relation("UserChat", fields: [user_id1], references: [user_id])
+  user2     User           @relation("UserChat2", fields: [user_id2], references: [user_id])
+  messages  Chat_Message[]
 
   // @@index([user_id1], map: "Chat_user_id1_fkey")
 }
+
 model Chat_Message {
   message_id  Int          @id @default(autoincrement())
-  chat_id    Int
+  chat_id     Int
   sender_id   Int
   receiver_id Int
   types       MessageType?
   message     String?
   read_status Boolean?
   createdAt   DateTime?    @default(now())
-  match       Chat        @relation(fields: [chat_id], references: [chat_id])
+  match       Chat         @relation(fields: [chat_id], references: [chat_id])
 
   @@index([chat_id], map: "Chat_Message_chat_id_fkey")
 }
@@ -176,7 +177,7 @@ model User_HaveMet {
 }
 
 model User_Interest {
-  user_id   Int
+  user_id        Int
   target_user_id Int
   user           User @relation(name: "TargetUser", fields: [target_user_id], references: [user_id])
   owner          User @relation(name: "OwnerUser", fields: [user_id], references: [user_id])
@@ -196,18 +197,18 @@ model Event_UserEnrolled {
 }
 
 model Pet_Breed {
-  breed_id           Int                   @id @default(autoincrement())
-  breedName          String
-  group              String
-  heightInches       String
-  weightPounds       String
-  personality        String
-  goodWithDogs       Int
-  playfulnessLevel   Int
-  watchdog           Int
-  adaptability       Int
-  energyLevel        Int
-  pets               Pet[]               
+  breed_id         Int    @id @default(autoincrement())
+  breedName        String
+  group            String
+  heightInches     String
+  weightPounds     String
+  personality      String
+  goodWithDogs     Int
+  playfulnessLevel Int
+  watchdog         Int
+  adaptability     Int
+  energyLevel      Int
+  pets             Pet[]
   // Pet_Breed_Relation Pet_Breed_Relation[]
 
   @@map("Pet_Breed")
