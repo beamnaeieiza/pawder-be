@@ -41,11 +41,17 @@ export const randomPet = async (req: Request, res: Response) => {
     });
     const metPetIds = metPets.map((met) => met.met_user_id);
 
+    const blockedUsers = await prisma.user_Blocked.findMany({
+      where: { user_id: id },
+      select: { blocked_user_id: true },
+    });
+    const blockedUserIds = blockedUsers.map((blocked) => blocked.blocked_user_id);
+
     const totalCount = await prisma.user.count({
       where: {
         NOT: {
           user_id: {
-            in: metPetIds,
+            in: [...metPetIds, ...blockedUserIds],
           },
         },
       },
@@ -55,11 +61,13 @@ export const randomPet = async (req: Request, res: Response) => {
     }
     const randomIndex = Math.floor(Math.random() * totalCount);
     // console.log(`Total Count: ${totalCount}, Random Index: ${randomIndex}`);
+
     const potentialPets = await prisma.user.findMany({
       where: {
+        deactivate: false,
         NOT: {
           user_id: {
-            in: [...metPetIds, id],
+            in: [...metPetIds, ...blockedUserIds, id],
           },
         },
       },
@@ -428,3 +436,28 @@ export const getUserSaved = async (req: Request, res: Response) => {
       .json({ error: "Failed to retrieve user saved information." });
   }
 };
+
+export const unMatchUser = async (req: Request, res: Response) => {
+  const id = (req as any).user.userId;
+  const { target_user_id } = req.body;
+  try {
+    const match = await prisma.match.deleteMany({
+      where: {
+        OR: [
+          { user_id1: id, user_id2: parseInt(target_user_id) },
+          { user_id1: parseInt(target_user_id), user_id2: id },
+        ],
+      },
+    });
+
+    await prisma.user_Interest.deleteMany({
+      where: {
+         user_id: id, target_user_id: parseInt(target_user_id)
+      }
+    });
+
+    res.json("Unmatched successfully");
+  } catch (error) {
+    res.status(500).json({ error: "Failed to unmatch user" });
+  }
+}

@@ -445,3 +445,103 @@ export const updateDistanceInterest = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to update user" });
   }
 };
+
+export const verifyId = async (req: Request, res: Response) => {
+  const id = (req as any).user.userId;
+  const { id_card } = req.body;
+  try {
+    const user = await prisma.user.update({
+      where: { user_id: parseInt(id) },
+      data: {
+        id_card,
+        verify_status: true,
+      },
+    });
+    res.json("Verified successfully");
+  } catch (error) {
+    res.status(500).json({ error: "Failed to verify user" });
+  }
+}
+
+export const blockUser = async (req: Request, res: Response) => {
+  const id = (req as any).user.userId;
+  const { blocked_user_id } = req.body;
+
+  try {
+    const block = await prisma.user_Blocked.create({
+      data: {
+        user_id: id,
+        blocked_user_id: parseInt(blocked_user_id),
+      },
+    });
+    res.json("Blocked successfully");
+  } catch (error) {
+    res.status(500).json({ error: "Failed to block user" });
+  }
+}
+
+export const unblockUser = async (req: Request, res: Response) => {
+  const id = (req as any).user.userId;
+  const { blocked_user_id } = req.body;
+  try {
+    const block = await prisma.user_Blocked.deleteMany({
+      where: {
+        user_id: id,
+        blocked_user_id: parseInt(blocked_user_id),
+      },
+    });
+    res.json("Unblocked successfully");
+  } catch (error) {
+    res.status(500).json({ error: "Failed to unblock user" });
+  }
+}
+
+export const unMatchUser = async (req: Request, res: Response) => {
+  const id = (req as any).user.userId;
+  const { target_user_id } = req.body;
+  try {
+    const match = await prisma.match.deleteMany({
+      where: {
+        OR: [
+          { user_id1: id, user_id2: parseInt(target_user_id) },
+          { user_id1: parseInt(target_user_id), user_id2: id },
+        ],
+      },
+    });
+
+    await prisma.user_Interest.deleteMany({
+      where: {
+         user_id: id, target_user_id: parseInt(target_user_id)
+      }
+    });
+
+    res.json("Unmatched successfully");
+  } catch (error) {
+    res.status(500).json({ error: "Failed to unmatch user" });
+  }
+}
+
+export const changeActivateAccount = async (req: Request, res: Response) => {
+  const id = (req as any).user.userId;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { user_id: parseInt(id) }
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { user_id: parseInt(id) },
+      data: {
+        deactivate: !user.deactivate,
+      },
+    });
+
+    res.json(`Account ${updatedUser.deactivate ? 'deactivated' : 'activated'} successfully`);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Failed to toggle account activation status" });
+  }
+};

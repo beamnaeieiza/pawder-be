@@ -6,7 +6,8 @@ import {
     notLikePet,
     getUserNotInterests,
     savePet,
-    getUserSaved
+    getUserSaved,
+    unMatchUser
 } from "../controllers/matchController";
 import {
     getPetCompatibility
@@ -25,5 +26,7 @@ router.get(`${routeType}/getUserInterest`, authMiddleware, getUserInterests);
 router.get(`${routeType}/getUserNotInterest`, authMiddleware, getUserNotInterests);
 router.get(`${routeType}/getUserSaved`, authMiddleware, getUserSaved);
 router.get(`${routeType}/getCompatibility`, authMiddleware, getPetCompatibility);
+
+router.post(`${routeType}/unMatchUser`, authMiddleware, unMatchUser);
 
 export default router;

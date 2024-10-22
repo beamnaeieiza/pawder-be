@@ -17,7 +17,9 @@ model User {
   profile_url        String?
   firstname          String?
   lastname           String?
+  id_card            String?
   verify_status      Boolean?
+  deactivate         Boolean?             @default(false)
   subscription       Subscription?
   location_latitude  String?
   location_longitude String?
@@ -32,6 +34,7 @@ model User {
   matchesAsUser2     Match[]              @relation("UserMatches2")
   chatAsUser1        Chat[]               @relation("UserChat")
   chatAsUser2        Chat[]               @relation("UserChat2")
+  group_chats        Group_Chat[]
   notifications      Notification[]
   pets               Pet[]
   user_dislike       User_Dislike[]
@@ -39,7 +42,13 @@ model User {
   interests          User_Interest[]      @relation(name: "TargetUser")
   user_interest      User_Interest[]      @relation(name: "OwnerUser")
   user_saved         User_Saved[]
+  user_blocked       User_Blocked[]
+  user_unmatch       User_Unmatch[]
   rating             Rating[]
+  sent_group_messages Group_Chat_Message[] @relation("UserSentGroupMessages")
+  
+ 
+
 }
 
 model Pet {
@@ -145,11 +154,43 @@ model Chat_Message {
   receiver_id Int
   types       MessageType?
   message     String?
-  read_status Boolean?
+  read_status Boolean?     @default(false)
   createdAt   DateTime?    @default(now())
   match       Chat         @relation(fields: [chat_id], references: [chat_id])
 
   @@index([chat_id], map: "Chat_Message_chat_id_fkey")
+}
+
+model Group_Chat {
+  group_chat_id Int       @id @default(autoincrement())
+  group_name    String?
+  group_url     String?
+  createdAt     DateTime? @default(now())
+  updatedAt     DateTime? @updatedAt
+  group_members User[]
+  messages      Group_Chat_Message[]
+}
+
+model Group_Chat_Message {
+  group_message_id Int       @id @default(autoincrement())
+  group_chat_id   Int
+  sender_id       Int
+  message         String?
+  types           MessageType?
+  createdAt       DateTime? @default(now())
+  updatedAt       DateTime? @updatedAt
+  sender          User      @relation("UserSentGroupMessages", fields: [sender_id], references: [user_id])
+  group_chat      Group_Chat @relation(fields: [group_chat_id], references: [group_chat_id])
+
+  @@index([group_chat_id], map: "Group_Chat_Message_group_chat_id_fkey")
+}
+
+model User_Blocked {
+  user_id         Int
+  blocked_user_id Int
+  user            User @relation(fields: [blocked_user_id], references: [user_id])
+
+  @@id([user_id, blocked_user_id])
 }
 
 model User_Saved {
@@ -183,6 +224,14 @@ model User_Interest {
   owner          User @relation(name: "OwnerUser", fields: [user_id], references: [user_id])
 
   @@id([user_id, target_user_id])
+}
+
+model User_Unmatch {
+  user_id         Int
+  unmatch_user_id Int
+  user            User @relation(fields: [unmatch_user_id], references: [user_id])
+
+  @@id([user_id, unmatch_user_id])
 }
 
 model Event_UserEnrolled {

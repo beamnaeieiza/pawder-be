@@ -30,4 +30,9 @@ router.get("/users/getUserLikeByList", authMiddleware_1.default, userController_
 router.post("/users/deletePet", authMiddleware_1.default, userController_1.deletePet);
 router.post("/users/updateLocation", authMiddleware_1.default, userController_1.updateLocation);
 router.post("/users/updateDistance", authMiddleware_1.default, userController_1.updateDistanceInterest);
+router.post("/users/verifyId", authMiddleware_1.default, userController_1.verifyId);
+router.post("/users/blockUser", authMiddleware_1.default, userController_1.blockUser);
+router.post("/users/unblockUser", authMiddleware_1.default, userController_1.unblockUser);
+router.post("/users/unMatchUser", authMiddleware_1.default, userController_1.unMatchUser);
+router.post("/users/changeActivateAccount", authMiddleware_1.default, userController_1.changeActivateAccount);
 exports.default = router;

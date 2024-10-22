@@ -17,4 +17,5 @@ router.get(`${routeType}/getUserInterest`, authMiddleware_1.default, matchContro
 router.get(`${routeType}/getUserNotInterest`, authMiddleware_1.default, matchController_1.getUserNotInterests);
 router.get(`${routeType}/getUserSaved`, authMiddleware_1.default, matchController_1.getUserSaved);
 router.get(`${routeType}/getCompatibility`, authMiddleware_1.default, compatibilityController_1.getPetCompatibility);
+router.post(`${routeType}/unMatchUser`, authMiddleware_1.default, matchController_1.unMatchUser);
 exports.default = router;

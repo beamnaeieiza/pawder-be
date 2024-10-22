@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getUserSaved = exports.getUserNotInterests = exports.getUserInterests = exports.savePet = exports.notLikePet = exports.likePet = exports.randomPet = void 0;
+exports.unMatchUser = exports.getUserSaved = exports.getUserNotInterests = exports.getUserInterests = exports.savePet = exports.notLikePet = exports.likePet = exports.randomPet = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 const haversine_distance_1 = __importDefault(require("haversine-distance"));
@@ -44,11 +44,16 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             select: { met_user_id: true }, // Select only the met_pet_id
         });
         const metPetIds = metPets.map((met) => met.met_user_id);
+        const blockedUsers = yield prisma.user_Blocked.findMany({
+            where: { user_id: id },
+            select: { blocked_user_id: true },
+        });
+        const blockedUserIds = blockedUsers.map((blocked) => blocked.blocked_user_id);
         const totalCount = yield prisma.user.count({
             where: {
                 NOT: {
                     user_id: {
-                        in: metPetIds,
+                        in: [...metPetIds, ...blockedUserIds],
                     },
                 },
             },
@@ -60,9 +65,10 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // console.log(`Total Count: ${totalCount}, Random Index: ${randomIndex}`);
         const potentialPets = yield prisma.user.findMany({
             where: {
+                deactivate: false,
                 NOT: {
                     user_id: {
-                        in: [...metPetIds, id],
+                        in: [...metPetIds, ...blockedUserIds, id],
                     },
                 },
             },
@@ -406,3 +412,27 @@ const getUserSaved = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.getUserSaved = getUserSaved;
+const unMatchUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    const { target_user_id } = req.body;
+    try {
+        const match = yield prisma.match.deleteMany({
+            where: {
+                OR: [
+                    { user_id1: id, user_id2: parseInt(target_user_id) },
+                    { user_id1: parseInt(target_user_id), user_id2: id },
+                ],
+            },
+        });
+        yield prisma.user_Interest.deleteMany({
+            where: {
+                user_id: id, target_user_id: parseInt(target_user_id)
+            }
+        });
+        res.json("Unmatched successfully");
+    }
+    catch (error) {
+        res.status(500).json({ error: "Failed to unmatch user" });
+    }
+});
+exports.unMatchUser = unMatchUser;

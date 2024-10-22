@@ -14,4 +14,7 @@ router.get(`${routeType}/getChatMessage`, authMiddleware_1.default, chatControll
 router.post(`${routeType}/createChat`, authMiddleware_1.default, chatController_1.createChat);
 router.post(`${routeType}/sendMessage`, authMiddleware_1.default, chatController_1.sendChatMessage);
 router.post(`${routeType}/markRead`, authMiddleware_1.default, chatController_1.markChatRead);
+router.post(`${routeType}/createGroupChat`, authMiddleware_1.default, chatController_1.createGroupChat);
+router.post(`${routeType}/sendGroupMessage`, authMiddleware_1.default, chatController_1.sendGroupChatMessage);
+router.get(`${routeType}/getGroupChatMessage`, authMiddleware_1.default, chatController_1.getGroupChatMessage);
 exports.default = router;

@@ -5,7 +5,10 @@ import {
   getChatMessage,
   sendChatMessage,
   createChat,
-  markChatRead
+  markChatRead,
+  createGroupChat,
+  sendGroupChatMessage,
+  getGroupChatMessage,
 } from "../controllers/chatController";
 import authMiddleware from "../middlewares/authMiddleware";
 import { get } from "http";
@@ -19,5 +22,10 @@ router.get(`${routeType}/getChatMessage`, authMiddleware, getChatMessage);
 router.post(`${routeType}/createChat`, authMiddleware, createChat);
 router.post(`${routeType}/sendMessage`, authMiddleware, sendChatMessage);
 router.post(`${routeType}/markRead`, authMiddleware, markChatRead);
+
+
+router.post(`${routeType}/createGroupChat`, authMiddleware, createGroupChat);
+router.post(`${routeType}/sendGroupMessage`, authMiddleware, sendGroupChatMessage);
+router.get(`${routeType}/getGroupChatMessage`, authMiddleware, getGroupChatMessage);
 
 export default router;

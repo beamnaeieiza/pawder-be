@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateDistanceInterest = exports.updateLocation = exports.getStatistic = exports.getUserLikeByList = exports.deleteUser = exports.getPetList = exports.deletePet = exports.createPet = exports.updateUser = exports.getDogById = exports.getUserIdInfo = exports.getUserById = exports.getUsers = exports.login = exports.signUp = void 0;
+exports.changeActivateAccount = exports.unMatchUser = exports.unblockUser = exports.blockUser = exports.verifyId = exports.updateDistanceInterest = exports.updateLocation = exports.getStatistic = exports.getUserLikeByList = exports.deleteUser = exports.getPetList = exports.deletePet = exports.createPet = exports.updateUser = exports.getDogById = exports.getUserIdInfo = exports.getUserById = exports.getUsers = exports.login = exports.signUp = void 0;
 const client_1 = require("@prisma/client");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -425,3 +425,102 @@ const updateDistanceInterest = (req, res) => __awaiter(void 0, void 0, void 0, f
     }
 });
 exports.updateDistanceInterest = updateDistanceInterest;
+const verifyId = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    const { id_card } = req.body;
+    try {
+        const user = yield prisma.user.update({
+            where: { user_id: parseInt(id) },
+            data: {
+                id_card,
+                verify_status: true,
+            },
+        });
+        res.json("Verified successfully");
+    }
+    catch (error) {
+        res.status(500).json({ error: "Failed to verify user" });
+    }
+});
+exports.verifyId = verifyId;
+const blockUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    const { blocked_user_id } = req.body;
+    try {
+        const block = yield prisma.user_Blocked.create({
+            data: {
+                user_id: id,
+                blocked_user_id: parseInt(blocked_user_id),
+            },
+        });
+        res.json("Blocked successfully");
+    }
+    catch (error) {
+        res.status(500).json({ error: "Failed to block user" });
+    }
+});
+exports.blockUser = blockUser;
+const unblockUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    const { blocked_user_id } = req.body;
+    try {
+        const block = yield prisma.user_Blocked.deleteMany({
+            where: {
+                user_id: id,
+                blocked_user_id: parseInt(blocked_user_id),
+            },
+        });
+        res.json("Unblocked successfully");
+    }
+    catch (error) {
+        res.status(500).json({ error: "Failed to unblock user" });
+    }
+});
+exports.unblockUser = unblockUser;
+const unMatchUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    const { target_user_id } = req.body;
+    try {
+        const match = yield prisma.match.deleteMany({
+            where: {
+                OR: [
+                    { user_id1: id, user_id2: parseInt(target_user_id) },
+                    { user_id1: parseInt(target_user_id), user_id2: id },
+                ],
+            },
+        });
+        yield prisma.user_Interest.deleteMany({
+            where: {
+                user_id: id, target_user_id: parseInt(target_user_id)
+            }
+        });
+        res.json("Unmatched successfully");
+    }
+    catch (error) {
+        res.status(500).json({ error: "Failed to unmatch user" });
+    }
+});
+exports.unMatchUser = unMatchUser;
+const changeActivateAccount = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    try {
+        const user = yield prisma.user.findUnique({
+            where: { user_id: parseInt(id) }
+        });
+        if (!user) {
+            return res.status(404).json({ error: "User not found" });
+        }
+        const updatedUser = yield prisma.user.update({
+            where: { user_id: parseInt(id) },
+            data: {
+                deactivate: !user.deactivate,
+            },
+        });
+        res.json(`Account ${updatedUser.deactivate ? 'deactivated' : 'activated'} successfully`);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to toggle account activation status" });
+    }
+});
+exports.changeActivateAccount = changeActivateAccount;

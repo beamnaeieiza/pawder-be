@@ -15,6 +15,12 @@ import {
   deletePet,
   updateLocation,
   updateDistanceInterest,
+  verifyId,
+  blockUser,
+  unblockUser,
+  unMatchUser,
+  changeActivateAccount
+
 } from "../controllers/userController";
 import {
   uploadProfileImage,
@@ -61,5 +67,12 @@ router.post("/users/deletePet", authMiddleware, deletePet);
 router.post("/users/updateLocation", authMiddleware, updateLocation);
 
 router.post("/users/updateDistance", authMiddleware, updateDistanceInterest);
+
+router.post("/users/verifyId", authMiddleware, verifyId);
+
+router.post("/users/blockUser", authMiddleware, blockUser);
+router.post("/users/unblockUser", authMiddleware, unblockUser);
+router.post("/users/unMatchUser", authMiddleware, unMatchUser);
+router.post("/users/changeActivateAccount", authMiddleware, changeActivateAccount);
 
 export default router;

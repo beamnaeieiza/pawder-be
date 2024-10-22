@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.markChatRead = exports.getChatMessage = exports.sendChatMessage = exports.createChat = exports.getChatList = exports.getMatchList = void 0;
+exports.sendGroupChatMessage = exports.getGroupChatMessage = exports.createGroupChat = exports.markChatRead = exports.getChatMessage = exports.sendChatMessage = exports.createChat = exports.getChatList = exports.getMatchList = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
@@ -74,19 +74,68 @@ const getChatList = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             include: {
                 user1: true,
                 user2: true,
-                messages: true
+                messages: {
+                    orderBy: {
+                        createdAt: 'desc'
+                    },
+                    take: 1
+                }
             }
         });
         const formattedChatList = chatList.map(chat => {
-            const { user1, user2 } = chat, rest = __rest(chat, ["user1", "user2"]);
+            const { user1, user2, messages } = chat, rest = __rest(chat, ["user1", "user2", "messages"]);
+            const lastMessage = messages[0];
             if (chat.user_id1 === parseInt(id)) {
-                return Object.assign(Object.assign({}, rest), { chat_user: chat.user2 });
+                return Object.assign(Object.assign({}, rest), { lastMessage, chat_user: {
+                        user_id: chat.user2.user_id,
+                        firstname: chat.user2.firstname,
+                        lastname: chat.user2.lastname,
+                        username: chat.user2.username,
+                        profile_url: chat.user2.profile_url
+                    } });
             }
             else {
-                return Object.assign(Object.assign({}, rest), { chat_user: chat.user1 });
+                return Object.assign(Object.assign({}, rest), { lastMessage, chat_user: {
+                        user_id: chat.user1.user_id,
+                        firstname: chat.user1.firstname,
+                        lastname: chat.user1.lastname,
+                        username: chat.user1.username,
+                        profile_url: chat.user1.profile_url
+                    } });
             }
         });
-        res.json(formattedChatList);
+        const getGroupChat = yield prisma.group_Chat.findMany({
+            where: {
+                group_members: {
+                    some: {
+                        user_id: parseInt(id)
+                    }
+                }
+            },
+            include: {
+                messages: {
+                    orderBy: {
+                        createdAt: 'desc'
+                    },
+                    take: 1
+                },
+                group_members: {
+                    select: {
+                        user_id: true,
+                        firstname: true,
+                        lastname: true,
+                        username: true,
+                        profile_url: true
+                    }
+                }
+            }
+        });
+        const formattedGroupChatList = getGroupChat.map(chat => {
+            const { group_members, messages } = chat, rest = __rest(chat, ["group_members", "messages"]);
+            const lastMessage = messages[0];
+            return Object.assign(Object.assign({}, rest), { lastMessage });
+        });
+        res.json({ chatList: formattedChatList, groupChatList: formattedGroupChatList });
     }
     catch (error) {
         console.log(error);
@@ -245,3 +294,126 @@ const markChatRead = (req, res) => __awaiter(void 0, void 0, void 0, function* (
     }
 });
 exports.markChatRead = markChatRead;
+const createGroupChat = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    let { group_name, members } = req.body;
+    try {
+        const chat = yield prisma.group_Chat.create({
+            data: {
+                group_name: group_name,
+                group_members: {
+                    connect: [{ user_id: parseInt(id) }, ...members.map((member) => ({ user_id: member }))]
+                }
+            }
+        });
+        const send_notification = members.map((member) => __awaiter(void 0, void 0, void 0, function* () {
+            const user = yield prisma.user.findUnique({
+                where: { user_id: member }
+            });
+            const notification = yield prisma.notification.create({
+                data: {
+                    user_id: member,
+                    title: "New Group Chat",
+                    message: "You have been added to a new group chat '" + group_name + "'",
+                    read_status: false
+                }
+            });
+        }));
+        res.json(chat);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to create group chat" });
+    }
+});
+exports.createGroupChat = createGroupChat;
+const getGroupChatMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    let { group_id } = req.query;
+    if (group_id) {
+        group_id = group_id.toString();
+    }
+    else {
+        return res.status(400).json({ error: "group_id is required" });
+    }
+    try {
+        const existingChat = yield prisma.group_Chat.findUnique({
+            where: { group_chat_id: parseInt(group_id) },
+            include: {
+                messages: {
+                    orderBy: {
+                        createdAt: 'asc'
+                    },
+                    include: {
+                        sender: {
+                            select: {
+                                user_id: true,
+                                firstname: true,
+                                lastname: true,
+                                username: true,
+                                profile_url: true
+                            }
+                        }
+                    }
+                },
+                group_members: true
+            }
+        });
+        if (!existingChat) {
+            return res.status(404).json({ error: "Group Chat not found" });
+        }
+        const groupMembers = existingChat.group_members.map(member => ({
+            user_id: member.user_id,
+            firstname: member.firstname,
+            lastname: member.lastname,
+            username: member.username,
+            profile_url: member.profile_url
+        }));
+        //   const getLastMessage = existingChat.messages[existingChat.messages.length - 1];
+        res.json({
+            group_id: existingChat.group_chat_id,
+            group_name: existingChat.group_name,
+            group_url: existingChat.group_url,
+            // createdAt: existingChat.createdAt,
+            // updatedAt: existingChat.updatedAt,
+            // group_members: groupMembers,
+            messages: existingChat.messages
+        });
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to get group chat messages" });
+    }
+});
+exports.getGroupChatMessage = getGroupChatMessage;
+const sendGroupChatMessage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    let { group_id, types, message } = req.body;
+    group_id = parseInt(group_id);
+    try {
+        const existingChat = yield prisma.group_Chat.findUnique({
+            where: { group_chat_id: group_id }
+        });
+        if (!existingChat) {
+            return res.status(404).json({ error: "Group Chat not found" });
+        }
+        const chat = yield prisma.group_Chat.update({
+            where: { group_chat_id: group_id },
+            data: {
+                messages: {
+                    create: {
+                        sender_id: parseInt(id),
+                        types: types,
+                        message: message
+                    }
+                }
+            }
+        });
+        res.json(chat);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to send group chat message" });
+    }
+});
+exports.sendGroupChatMessage = sendGroupChatMessage;
