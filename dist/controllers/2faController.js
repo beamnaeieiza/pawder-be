@@ -14,6 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.verifyUserOTP = exports.generateQRCode = exports.updateUserWith2FA = void 0;
 const client_1 = require("@prisma/client");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
 const speakeasy_1 = __importDefault(require("speakeasy"));
 dotenv_1.default.config();
@@ -122,8 +123,12 @@ const verifyUserOTP = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         if (!isTOTPValid) {
             return res.status(401).json({ error: "Invalid 2FA code" });
         }
+        const token = jsonwebtoken_1.default.sign({ userId: id, username: user.username }, JWT_SECRET, {
+            expiresIn: "24h",
+        });
         res.status(200).json({
             message: "Verify successful!",
+            token: token
         });
     }
     catch (error) {

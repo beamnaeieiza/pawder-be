@@ -135,9 +135,18 @@ const verifyTOTP = (secret: string, token: string) => {
       if (!isTOTPValid) {
         return res.status(401).json({ error: "Invalid 2FA code" });
       }
+
+      const token = jwt.sign(
+        { userId: id, username: user.username },
+        JWT_SECRET,
+        {
+          expiresIn: "24h",
+        }
+      );
   
       res.status(200).json({
         message: "Verify successful!",
+        token: token
       });
 
     } catch (error) {
