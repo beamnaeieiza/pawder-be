@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateEventWithImage = exports.createEventWithImage = exports.createPetWithImage = exports.uploadProfileImage = void 0;
+exports.createGroupChatWithImage = exports.updateEventWithImage = exports.createEventWithImage = exports.createPetWithImage = exports.uploadProfileImage = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 const storage_blob_1 = require("@azure/storage-blob");
@@ -195,3 +195,36 @@ const updateEventWithImage = (req, res) => __awaiter(void 0, void 0, void 0, fun
     }
 });
 exports.updateEventWithImage = updateEventWithImage;
+const createGroupChatWithImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    let { group_name, members } = req.body;
+    try {
+        const file = req.file;
+        if (!file) {
+            return res.status(400).json({ error: "No file uploaded" });
+        }
+        const blobName = `image-${(0, uuid_1.v4)()}.jpg`;
+        const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+        yield blockBlobClient.uploadData(file.buffer, {
+            blobHTTPHeaders: {
+                blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
+            },
+        });
+        const group_url = blockBlobClient.url;
+        const group_chat = yield prisma.group_Chat.create({
+            data: {
+                group_name: group_name,
+                group_url: group_url,
+                group_members: {
+                    connect: [{ user_id: parseInt(id) }, ...members.map((member) => ({ user_id: parseInt(member) }))]
+                }
+            }
+        });
+        res.json(group_chat);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to create group chat" });
+    }
+});
+exports.createGroupChatWithImage = createGroupChatWithImage;

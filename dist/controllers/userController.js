@@ -64,7 +64,7 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const token = jsonwebtoken_1.default.sign({ userId: existingUser.user_id, username: existingUser.username }, JWT_SECRET, {
             expiresIn: "24h",
         });
-        res.status(200).json({ token: token });
+        res.status(200).json({ token: token, twoFA: existingUser.twoFA });
     }
     catch (error) {
         console.log(error);

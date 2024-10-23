@@ -217,3 +217,42 @@ export const updateEventWithImage = async (req: Request, res: Response) => {
 };
 
 
+export const createGroupChatWithImage = async (req: Request, res: Response) => {
+  const id = (req as any).user.userId;
+  let { group_name, members } = req.body;
+
+  try {
+    const file = req.file;
+
+    if (!file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+    const blobName = `image-${uuidv4()}.jpg`;
+
+    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+
+    await blockBlobClient.uploadData(file.buffer, {
+        blobHTTPHeaders: {
+          blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
+        },
+      });
+    const group_url = blockBlobClient.url;
+
+    const group_chat = await prisma.group_Chat.create({
+      data: {
+      group_name: group_name,
+      group_url: group_url,
+      group_members: {
+          connect: [{ user_id: parseInt(id) }, ...members.map((member: any) => ({ user_id: parseInt(member) }))]
+      }
+      }
+  });
+        res.json(group_chat);
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: "Failed to create group chat" });
+  }
+}
+
+

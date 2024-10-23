@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const userController_1 = require("../controllers/userController");
 const imageController_1 = require("../controllers/imageController");
+const _2faController_1 = require("../controllers/2faController");
 const ratingController_1 = require("../controllers/ratingController");
 const authMiddleware_1 = __importDefault(require("../middlewares/authMiddleware"));
 const multer_1 = __importDefault(require("multer"));
@@ -33,6 +34,8 @@ router.post("/users/updateDistance", authMiddleware_1.default, userController_1.
 router.post("/users/verifyId", authMiddleware_1.default, userController_1.verifyId);
 router.post("/users/blockUser", authMiddleware_1.default, userController_1.blockUser);
 router.post("/users/unblockUser", authMiddleware_1.default, userController_1.unblockUser);
-router.post("/users/unMatchUser", authMiddleware_1.default, userController_1.unMatchUser);
 router.post("/users/changeActivateAccount", authMiddleware_1.default, userController_1.changeActivateAccount);
+router.post("/users/updateUserWith2FA", authMiddleware_1.default, _2faController_1.updateUserWith2FA);
+router.get("/users/generateQRCode", authMiddleware_1.default, _2faController_1.generateQRCode);
+router.post("/users/verifyUserOTP", authMiddleware_1.default, _2faController_1.verifyUserOTP);
 exports.default = router;

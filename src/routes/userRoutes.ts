@@ -25,6 +25,12 @@ import {
   uploadProfileImage,
   createPetWithImage,
 } from "../controllers/imageController";
+
+import {
+  updateUserWith2FA,
+  generateQRCode,
+  verifyUserOTP
+} from "../controllers/2faController";
 import { createComment } from "../controllers/ratingController";
 import authMiddleware from "../middlewares/authMiddleware";
 import multer from "multer";
@@ -73,5 +79,9 @@ router.post("/users/verifyId", authMiddleware, verifyId);
 router.post("/users/blockUser", authMiddleware, blockUser);
 router.post("/users/unblockUser", authMiddleware, unblockUser);
 router.post("/users/changeActivateAccount", authMiddleware, changeActivateAccount);
+
+router.post("/users/updateUserWith2FA", authMiddleware, updateUserWith2FA);
+router.get("/users/generateQRCode", authMiddleware, generateQRCode);
+router.post("/users/verifyUserOTP", authMiddleware, verifyUserOTP);
 
 export default router;

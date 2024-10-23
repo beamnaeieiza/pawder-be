@@ -71,7 +71,7 @@ export const login = async (req: Request, res: Response) => {
       }
     );
 
-    res.status(200).json({ token: token });
+    res.status(200).json({ token: token, twoFA : existingUser.twoFA });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: "Failed to login" });

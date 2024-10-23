@@ -19,6 +19,7 @@ model User {
   lastname           String?
   id_card            String?
   verify_status      Boolean?
+  twoFA              Boolean?             @default(false)
   deactivate         Boolean?             @default(false)
   subscription       Subscription?
   location_latitude  String?

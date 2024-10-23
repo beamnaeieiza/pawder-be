@@ -425,3 +425,88 @@ export const getGroupChatMessage = async (req: Request, res: Response) => {
         res.status(500).json({ error: "Failed to send group chat message" });
     }
 }
+
+export const addMemberToGroupChat = async (req: Request, res: Response) => {
+    const id = (req as any).user.userId;
+    let { group_id, members } = req.body;
+    group_id = parseInt(group_id);
+    try {
+        const existingChat = await prisma.group_Chat.findUnique({
+            where: { group_chat_id: group_id }
+        });
+
+        if (!existingChat) {
+            return res.status(404).json({ error: "Group Chat not found" });
+        }
+
+        const chat = await prisma.group_Chat.update({
+            where: { group_chat_id: group_id },
+            data: {
+                group_members: {
+                    connect: members.map((member: any) => ({ user_id: parseInt(member) }))
+                }
+            }
+        });
+
+        const send_notification = members.map(async (member: any) => {
+            const user = await prisma.user.findUnique({
+                where: { user_id: parseInt(member) }
+            });
+
+            const notification = await prisma.notification.create({
+                data: {
+                    user_id: member,
+                    title: "New Group Chat",
+                    message: "You have been added to a group chat '"+ existingChat.group_name+"'",
+                    read_status: false
+                }
+            });
+        });
+
+        res.json(chat);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to add member to group chat" });
+    }
+}
+
+export const getGroupChatInfo = async (req: Request, res: Response) => {
+    const id = (req as any).user.userId;
+    let { group_id } = req.query;
+    if (group_id) {
+        group_id = group_id.toString();
+    } else {
+        return res.status(400).json({ error: "group_id is required" });
+    }
+    try {
+      const existingChat = await prisma.group_Chat.findUnique({
+        where: { group_chat_id: parseInt(group_id) },
+        include: {
+            group_members: true
+        }
+      });
+      
+      if (!existingChat) {
+        return res.status(404).json({ error: "Group Chat not found" });
+      }
+
+      const groupMembers = existingChat.group_members.map(member => ({
+        user_id: member.user_id,
+        firstname: member.firstname,
+        lastname: member.lastname,
+        username: member.username,
+        profile_url: member.profile_url
+      }));
+  
+      res.json({
+        group_id: existingChat.group_chat_id,
+        group_name: existingChat.group_name,
+        group_url: existingChat.group_url,
+        group_members: groupMembers
+      });
+
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error: "Failed to get group chat info" });
+    }
+  }
