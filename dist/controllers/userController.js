@@ -103,6 +103,7 @@ const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 gender: true,
                 birthdate: true,
                 distance_interest: true,
+                twoFA: true
             },
         });
         if (!user) {

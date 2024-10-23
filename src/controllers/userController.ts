@@ -108,6 +108,7 @@ export const getUserById = async (req: Request, res: Response) => {
         gender: true,
         birthdate: true,
         distance_interest: true,
+        twoFA: true
       },
     });
     if (!user) {
