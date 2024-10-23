@@ -108,7 +108,8 @@ export const getUserById = async (req: Request, res: Response) => {
         gender: true,
         birthdate: true,
         distance_interest: true,
-        twoFA: true
+        twoFA: true,
+        deactivate: true,
       },
     });
     if (!user) {
@@ -144,6 +145,7 @@ export const getUserIdInfo = async (req: Request, res: Response) => {
         gender: true,
         birthdate: true,
         distance_interest: true,
+        
         pets: {
           include: {
             breed: {
