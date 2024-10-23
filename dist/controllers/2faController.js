@@ -21,9 +21,16 @@ const prisma = new client_1.PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET;
 const generateSecretKey = () => {
     const secret = speakeasy_1.default.generateSecret({ length: 20 });
+    console.log("url = " + secret.otpauth_url);
     return secret.base32; // Return the secret in base32 format
 };
 const verifyTOTP = (secret, token) => {
+    const serverGeneratedToken = speakeasy_1.default.totp({
+        secret,
+        encoding: 'base32',
+    });
+    console.log(`Server Generated Token: ${serverGeneratedToken}`);
+    console.log(`User Provided Token: ${token}`);
     return speakeasy_1.default.totp.verify({
         secret,
         encoding: 'base32', // Make sure the encoding matches your stored secret
@@ -43,12 +50,12 @@ const updateUserWith2FA = (req, res) => __awaiter(void 0, void 0, void 0, functi
             },
             data: {
                 twoFA: true,
-                token: secretKey, // Store the secret key for 2FA
+                //   token: secretKey, // Store the secret key for 2FA
             },
         });
         // Return the secret key or QR code URL to the user for setup
         res.status(201).json({
-            message: "User updated key successfully!",
+            message: "User updated 2FA successfully!",
             twoFactorSecret: secretKey, // Optionally, send back the secret key
         });
     }
@@ -70,12 +77,23 @@ const generateQRCode = (req, res) => __awaiter(void 0, void 0, void 0, function*
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
-        // Generate the QR code URL for the user
-        const qrCodeUrl = speakeasy_1.default.otpauthURL({
-            secret: user.token || '', // Use the secret key stored in the database
-            label: "PawderApp", // Label for the QR code
-            issuer: "PawderApp", // Company name issuing the QR code
+        const secret = speakeasy_1.default.generateSecret({ length: 20 });
+        const qrCodeUrl = secret.otpauth_url;
+        const updateUser = yield prisma.user.update({
+            where: {
+                user_id: id,
+            },
+            data: {
+                token: secret.base32, // Store the secret key for 2FA
+            },
         });
+        // Generate the QR code URL for the user
+        //   const qrCodeUrl = speakeasy.otpauthURL({
+        //     secret: user.token || '', // Use the secret key stored in the database
+        //     label: "PawderApp", // Label for the QR code
+        //     issuer: "PawderApp", // Company name issuing the QR code
+        //   });
+        //   console.log("token :" + updateUser.token)
         res.status(200).json({ qrCodeUrl });
     }
     catch (error) {

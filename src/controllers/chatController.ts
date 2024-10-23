@@ -517,11 +517,20 @@ export const getGroupChatInfo = async (req: Request, res: Response) => {
     group_id = parseInt(group_id);
     try {
         const existingChat = await prisma.group_Chat.findUnique({
-            where: { group_chat_id: group_id }
+            where: { group_chat_id: group_id },
+            include: {
+                group_members: true
+            }
         });
 
         if (!existingChat) {
             return res.status(404).json({ error: "Group Chat not found" });
+        }
+
+        const isMember = existingChat.group_members.some(member => member.user_id === parseInt(id));
+
+        if (!isMember) {
+            return res.status(403).json({ error: "You are not a member of this group chat" });
         }
 
         const chat = await prisma.group_Chat.update({
