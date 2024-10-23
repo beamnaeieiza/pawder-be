@@ -35,6 +35,7 @@ router.post("/users/verifyId", authMiddleware_1.default, userController_1.verify
 router.post("/users/blockUser", authMiddleware_1.default, userController_1.blockUser);
 router.post("/users/unblockUser", authMiddleware_1.default, userController_1.unblockUser);
 router.post("/users/changeActivateAccount", authMiddleware_1.default, userController_1.changeActivateAccount);
+router.get("/users/getBlockedUsers", authMiddleware_1.default, userController_1.getBlockedUsers);
 router.post("/users/updateUserWith2FA", authMiddleware_1.default, _2faController_1.updateUserWith2FA);
 router.get("/users/generateQRCode", authMiddleware_1.default, _2faController_1.generateQRCode);
 router.post("/users/verifyUserOTP", authMiddleware_1.default, _2faController_1.verifyUserOTP);

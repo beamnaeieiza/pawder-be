@@ -38,27 +38,36 @@ const verifyTOTP = (secret: string, token: string) => {
   
     try {
       // Generate the secret key for 2FA
-      const secretKey = generateSecretKey();
+      const user = await prisma.user.findUnique({
+        where: { user_id: id },
+        select: { twoFA: true }
+    });
+
+    if (!user) {
+        return res.status(404).json({ error: "User not found" });
+    }
+
+    //   const secretKey = generateSecretKey();
   
       // Create the user with the secret key in the database
-      const newUser = await prisma.user.update({
+      const updatedUser = await prisma.user.update({
         where: {
             user_id: id,
         },
         data: {
-          twoFA : true,
+          twoFA : !user.twoFA,
         //   token: secretKey, // Store the secret key for 2FA
         },
       });
   
       // Return the secret key or QR code URL to the user for setup
       res.status(201).json({
-        message: "User updated 2FA successfully!",
-        twoFactorSecret: secretKey, // Optionally, send back the secret key
+        message: `User ${updatedUser.twoFA ? 'enabled' : 'disabled'} 2FA successfully!`,
+        // twoFactorSecret: secretKey, // Optionally, send back the secret key
       });
     } catch (error) {
       console.error(error);
-      res.status(500).json({ error: "Failed to create user" });
+      res.status(500).json({ error: "Failed to toggle 2FA status" });
     }
   };
 

@@ -523,3 +523,29 @@ export const changeActivateAccount = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to toggle account activation status" });
   }
 };
+
+
+export const getBlockedUsers = async (req: Request, res: Response) => {
+  const id = (req as any).user.userId;
+  try {
+    const blockedUsers = await prisma.user_Blocked.findMany({
+      where: { user_id: id },
+      include: {
+        user: {
+          select: {
+            user_id: true,
+            username: true,
+            firstname: true,
+            lastname: true,
+            profile_url: true,
+          },
+        },
+      },
+    });
+
+    res.json(blockedUsers);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Failed to get blocked users" });
+  }
+}

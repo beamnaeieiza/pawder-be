@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.changeActivateAccount = exports.unblockUser = exports.blockUser = exports.verifyId = exports.updateDistanceInterest = exports.updateLocation = exports.getStatistic = exports.getUserLikeByList = exports.deleteUser = exports.getPetList = exports.deletePet = exports.createPet = exports.updateUser = exports.getDogById = exports.getUserIdInfo = exports.getUserById = exports.getUsers = exports.login = exports.signUp = void 0;
+exports.getBlockedUsers = exports.changeActivateAccount = exports.unblockUser = exports.blockUser = exports.verifyId = exports.updateDistanceInterest = exports.updateLocation = exports.getStatistic = exports.getUserLikeByList = exports.deleteUser = exports.getPetList = exports.deletePet = exports.createPet = exports.updateUser = exports.getDogById = exports.getUserIdInfo = exports.getUserById = exports.getUsers = exports.login = exports.signUp = void 0;
 const client_1 = require("@prisma/client");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
@@ -502,3 +502,28 @@ const changeActivateAccount = (req, res) => __awaiter(void 0, void 0, void 0, fu
     }
 });
 exports.changeActivateAccount = changeActivateAccount;
+const getBlockedUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    try {
+        const blockedUsers = yield prisma.user_Blocked.findMany({
+            where: { user_id: id },
+            include: {
+                user: {
+                    select: {
+                        user_id: true,
+                        username: true,
+                        firstname: true,
+                        lastname: true,
+                        profile_url: true,
+                    },
+                },
+            },
+        });
+        res.json(blockedUsers);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to get blocked users" });
+    }
+});
+exports.getBlockedUsers = getBlockedUsers;

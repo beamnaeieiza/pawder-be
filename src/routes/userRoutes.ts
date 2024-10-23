@@ -18,7 +18,8 @@ import {
   verifyId,
   blockUser,
   unblockUser,
-  changeActivateAccount
+  changeActivateAccount,
+  getBlockedUsers
 
 } from "../controllers/userController";
 import {
@@ -79,6 +80,7 @@ router.post("/users/verifyId", authMiddleware, verifyId);
 router.post("/users/blockUser", authMiddleware, blockUser);
 router.post("/users/unblockUser", authMiddleware, unblockUser);
 router.post("/users/changeActivateAccount", authMiddleware, changeActivateAccount);
+router.get("/users/getBlockedUsers", authMiddleware, getBlockedUsers);
 
 router.post("/users/updateUserWith2FA", authMiddleware, updateUserWith2FA);
 router.get("/users/generateQRCode", authMiddleware, generateQRCode);
