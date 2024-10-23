@@ -23,7 +23,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getGroupChatInfo = exports.addMemberToGroupChat = exports.sendGroupChatMessage = exports.getGroupChatMessage = exports.createGroupChat = exports.markChatRead = exports.getChatMessage = exports.sendChatMessage = exports.createChat = exports.getChatList = exports.getMatchList = void 0;
+exports.leaveGroupChat = exports.getGroupChatInfo = exports.addMemberToGroupChat = exports.sendGroupChatMessage = exports.getGroupChatMessage = exports.createGroupChat = exports.markChatRead = exports.getChatMessage = exports.sendChatMessage = exports.createChat = exports.getChatList = exports.getMatchList = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 dotenv_1.default.config();
@@ -496,3 +496,30 @@ const getGroupChatInfo = (req, res) => __awaiter(void 0, void 0, void 0, functio
     }
 });
 exports.getGroupChatInfo = getGroupChatInfo;
+const leaveGroupChat = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    let { group_id } = req.body;
+    group_id = parseInt(group_id);
+    try {
+        const existingChat = yield prisma.group_Chat.findUnique({
+            where: { group_chat_id: group_id }
+        });
+        if (!existingChat) {
+            return res.status(404).json({ error: "Group Chat not found" });
+        }
+        const chat = yield prisma.group_Chat.update({
+            where: { group_chat_id: group_id },
+            data: {
+                group_members: {
+                    disconnect: [{ user_id: parseInt(id) }]
+                }
+            }
+        });
+        res.json(chat);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to leave group chat" });
+    }
+});
+exports.leaveGroupChat = leaveGroupChat;

@@ -510,3 +510,32 @@ export const getGroupChatInfo = async (req: Request, res: Response) => {
       res.status(500).json({ error: "Failed to get group chat info" });
     }
   }
+
+  export const leaveGroupChat = async (req: Request, res: Response) => {
+    const id = (req as any).user.userId;
+    let { group_id } = req.body;
+    group_id = parseInt(group_id);
+    try {
+        const existingChat = await prisma.group_Chat.findUnique({
+            where: { group_chat_id: group_id }
+        });
+
+        if (!existingChat) {
+            return res.status(404).json({ error: "Group Chat not found" });
+        }
+
+        const chat = await prisma.group_Chat.update({
+            where: { group_chat_id: group_id },
+            data: {
+                group_members: {
+                    disconnect: [{ user_id: parseInt(id) }]
+                }
+            }
+        });
+
+        res.json(chat);
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to leave group chat" });
+    }
+}

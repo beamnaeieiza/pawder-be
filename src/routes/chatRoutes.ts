@@ -10,7 +10,8 @@ import {
   sendGroupChatMessage,
   getGroupChatMessage,
   addMemberToGroupChat,
-  getGroupChatInfo
+  getGroupChatInfo,
+  leaveGroupChat
 } from "../controllers/chatController";
 import {
   createGroupChatWithImage
@@ -35,6 +36,7 @@ router.post(`${routeType}/createGroupChat`, authMiddleware, createGroupChat);
 router.post(`${routeType}/sendGroupMessage`, authMiddleware, sendGroupChatMessage);
 router.get(`${routeType}/getGroupChatMessage`, authMiddleware, getGroupChatMessage);
 router.get(`${routeType}/getGroupChatInfo`, authMiddleware, getGroupChatInfo);
+router.post(`${routeType}/leaveGroupChat`, authMiddleware, leaveGroupChat);
 
 router.post(`${routeType}/addMemberToGroupChat`, authMiddleware, addMemberToGroupChat);
 

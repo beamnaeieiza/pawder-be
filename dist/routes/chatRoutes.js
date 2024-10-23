@@ -21,6 +21,7 @@ router.post(`${routeType}/createGroupChat`, authMiddleware_1.default, chatContro
 router.post(`${routeType}/sendGroupMessage`, authMiddleware_1.default, chatController_1.sendGroupChatMessage);
 router.get(`${routeType}/getGroupChatMessage`, authMiddleware_1.default, chatController_1.getGroupChatMessage);
 router.get(`${routeType}/getGroupChatInfo`, authMiddleware_1.default, chatController_1.getGroupChatInfo);
+router.post(`${routeType}/leaveGroupChat`, authMiddleware_1.default, chatController_1.leaveGroupChat);
 router.post(`${routeType}/addMemberToGroupChat`, authMiddleware_1.default, chatController_1.addMemberToGroupChat);
 router.post(`${routeType}/createGroupChatWithImage`, upload.single("file"), authMiddleware_1.default, imageController_1.createGroupChatWithImage);
 exports.default = router;
