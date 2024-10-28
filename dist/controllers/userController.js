@@ -324,7 +324,7 @@ const getPetList = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
     catch (error) {
         console.log(error);
-        res.status(500).json({ error: "Failed to update user" });
+        res.status(500).json({ error: "Failed to get pet list" });
     }
 });
 exports.getPetList = getPetList;

@@ -25,7 +25,8 @@ router.get("/users/getDogById", authMiddleware_1.default, userController_1.getDo
 router.get("/users/getUserIdInfo/", authMiddleware_1.default, userController_1.getUserIdInfo);
 router.post("/users/createComment", authMiddleware_1.default, ratingController_1.createComment);
 router.post("/users/uploadProfileImage", upload.single("file"), authMiddleware_1.default, imageController_1.uploadProfileImage);
-router.post("/users/createPetWithImage", upload.single("file"), authMiddleware_1.default, imageController_1.createPetWithImage);
+router.post("/users/createPetWithImage", upload.array("files", 3), // Allow up to 10 files
+authMiddleware_1.default, imageController_1.createPetWithImages);
 router.get("/users/getStatistic", authMiddleware_1.default, userController_1.getStatistic);
 router.get("/users/getUserLikeByList", authMiddleware_1.default, userController_1.getUserLikeByList);
 router.post("/users/deletePet", authMiddleware_1.default, userController_1.deletePet);

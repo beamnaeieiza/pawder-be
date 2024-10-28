@@ -3,6 +3,9 @@ import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { parse } from "path";
+import { BlobServiceClient } from "@azure/storage-blob";
+import multer from "multer";
+import { v4 as uuidv4 } from 'uuid';
 
 dotenv.config();
 
@@ -190,6 +193,7 @@ export const sendChatMessage = async (req: Request, res: Response) => {
         });
 
         res.json(chat);
+    
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: "Failed to send chat message" });

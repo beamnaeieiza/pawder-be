@@ -56,9 +56,9 @@ export const uploadProfileImage = async (req: Request, res: Response) => {
   }
 };
 
-export const createPetWithImage = async (req: Request, res: Response) => {
+export const createPetWithImages = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
-  let { breed_id,petname,gender,age,pet_description, mixed_breed, habitId, height, weight } = req.body;
+  let { breed_id, petname, gender, age, pet_description, mixed_breed, habitId, height, weight } = req.body;
   breed_id = parseInt(breed_id);
   age = parseFloat(age);
 
@@ -67,22 +67,26 @@ export const createPetWithImage = async (req: Request, res: Response) => {
   }
 
   try {
-    const file = req.file;
+    const files = req.files as Express.Multer.File[];
 
-    if (!file) {
-        return res.status(400).json({ error: "No file uploaded" });
-      }
+    if (!files || files.length === 0) {
+      return res.status(400).json({ error: "No files uploaded" });
+    }
 
-    const blobName = `image-${uuidv4()}.jpg`;
+    const imageUrls: string[] = [];
 
-    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+    for (const file of files.slice(0, 3)) { // Limit to max 3 images
+      const blobName = `image-${uuidv4()}.jpg`;
+      const blockBlobClient = containerClient.getBlockBlobClient(blobName);
 
-    await blockBlobClient.uploadData(file.buffer, {
+      await blockBlobClient.uploadData(file.buffer, {
         blobHTTPHeaders: {
           blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
         },
       });
-    const imageUrl = blockBlobClient.url;
+
+      imageUrls.push(blockBlobClient.url);
+    }
 
     const pet = await prisma.user.update({
       where: { user_id: parseInt(id) },
@@ -92,31 +96,25 @@ export const createPetWithImage = async (req: Request, res: Response) => {
             breed_id: parseInt(breed_id),
             petname,
             pet_description,
-            height : parseFloat(height),
-            weight : parseFloat(weight),
-            pet_url : imageUrl,
+            height: parseFloat(height),
+            weight: parseFloat(weight),
+            pet_url: imageUrls[0] || null,
+            pet_url2: imageUrls[1] || null,
+            pet_url3: imageUrls[2] || null,
             gender,
             mixed_breed: mixed_breed,
-            age : parseFloat(age),
+            age: parseFloat(age),
             habits: {
               connect: habitId.map((habitId: number) => ({ habit_id: parseInt(habitId.toString()) })),
             }
-
+          },
         },
       },
-    },
-  });
+    });
 
-  //  const user = await prisma.user.update({
-  //       where: { user_id: parseInt(id) },
-  //       data: {
-  //           profile_url: imageUrl,
-  //       },
-  //       });
-    
-        res.json(pet);
+    res.json(pet);
   } catch (error) {
-    console.log(error)
+    console.log(error);
     res.status(500).json({ error: "Failed to update pet" });
   }
 };
@@ -252,6 +250,50 @@ export const createGroupChatWithImage = async (req: Request, res: Response) => {
   } catch (error) {
     console.log(error)
     res.status(500).json({ error: "Failed to create group chat" });
+  }
+}
+
+export const sendChatImage = async (req: Request, res: Response) => {
+  const id = (req as any).user.userId;
+  let { chat_id, receiver_id, types, message } = req.body;
+  chat_id = parseInt(chat_id);
+  receiver_id = parseInt(receiver_id);
+
+  try {
+    const file = req.file;
+
+    if (!file) {
+        return res.status(400).json({ error: "No file uploaded" });
+      }
+
+    const blobName = `image-${uuidv4()}.jpg`;
+
+    const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+
+    await blockBlobClient.uploadData(file.buffer, {
+        blobHTTPHeaders: {
+          blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
+        },
+      });
+    const chat_url = blockBlobClient.url;
+
+    const chat = await prisma.chat.update({
+      where : { chat_id : parseInt(chat_id) },
+      data : {
+        messages : {
+          create: {
+            sender_id: parseInt(id),
+            receiver_id: parseInt(receiver_id),
+            types: "IMAGE",
+            message: chat_url
+        }
+        }
+      }
+  });
+        res.json(chat);
+  } catch (error) {
+    console.log(error)
+    res.status(500).json({ error: "Failed to send chat image" });
   }
 }
 

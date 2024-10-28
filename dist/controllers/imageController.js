@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.createGroupChatWithImage = exports.updateEventWithImage = exports.createEventWithImage = exports.createPetWithImage = exports.uploadProfileImage = void 0;
+exports.sendChatImage = exports.createGroupChatWithImage = exports.updateEventWithImage = exports.createEventWithImage = exports.createPetWithImages = exports.uploadProfileImage = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 const storage_blob_1 = require("@azure/storage-blob");
@@ -57,7 +57,7 @@ const uploadProfileImage = (req, res) => __awaiter(void 0, void 0, void 0, funct
     }
 });
 exports.uploadProfileImage = uploadProfileImage;
-const createPetWithImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+const createPetWithImages = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
     let { breed_id, petname, gender, age, pet_description, mixed_breed, habitId, height, weight } = req.body;
     breed_id = parseInt(breed_id);
@@ -66,18 +66,21 @@ const createPetWithImage = (req, res) => __awaiter(void 0, void 0, void 0, funct
         return res.status(400).json({ error: 'habitId are required or need to be array.' });
     }
     try {
-        const file = req.file;
-        if (!file) {
-            return res.status(400).json({ error: "No file uploaded" });
+        const files = req.files;
+        if (!files || files.length === 0) {
+            return res.status(400).json({ error: "No files uploaded" });
         }
-        const blobName = `image-${(0, uuid_1.v4)()}.jpg`;
-        const blockBlobClient = containerClient.getBlockBlobClient(blobName);
-        yield blockBlobClient.uploadData(file.buffer, {
-            blobHTTPHeaders: {
-                blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
-            },
-        });
-        const imageUrl = blockBlobClient.url;
+        const imageUrls = [];
+        for (const file of files.slice(0, 3)) { // Limit to max 3 images
+            const blobName = `image-${(0, uuid_1.v4)()}.jpg`;
+            const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+            yield blockBlobClient.uploadData(file.buffer, {
+                blobHTTPHeaders: {
+                    blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
+                },
+            });
+            imageUrls.push(blockBlobClient.url);
+        }
         const pet = yield prisma.user.update({
             where: { user_id: parseInt(id) },
             data: {
@@ -88,7 +91,9 @@ const createPetWithImage = (req, res) => __awaiter(void 0, void 0, void 0, funct
                         pet_description,
                         height: parseFloat(height),
                         weight: parseFloat(weight),
-                        pet_url: imageUrl,
+                        pet_url: imageUrls[0] || null,
+                        pet_url2: imageUrls[1] || null,
+                        pet_url3: imageUrls[2] || null,
                         gender,
                         mixed_breed: mixed_breed,
                         age: parseFloat(age),
@@ -99,12 +104,6 @@ const createPetWithImage = (req, res) => __awaiter(void 0, void 0, void 0, funct
                 },
             },
         });
-        //  const user = await prisma.user.update({
-        //       where: { user_id: parseInt(id) },
-        //       data: {
-        //           profile_url: imageUrl,
-        //       },
-        //       });
         res.json(pet);
     }
     catch (error) {
@@ -112,7 +111,7 @@ const createPetWithImage = (req, res) => __awaiter(void 0, void 0, void 0, funct
         res.status(500).json({ error: "Failed to update pet" });
     }
 });
-exports.createPetWithImage = createPetWithImage;
+exports.createPetWithImages = createPetWithImages;
 const createEventWithImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
     let { eventTitle, description, eventDate, eventTime, location } = req.body;
@@ -228,3 +227,42 @@ const createGroupChatWithImage = (req, res) => __awaiter(void 0, void 0, void 0,
     }
 });
 exports.createGroupChatWithImage = createGroupChatWithImage;
+const sendChatImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    let { chat_id, receiver_id, types, message } = req.body;
+    chat_id = parseInt(chat_id);
+    receiver_id = parseInt(receiver_id);
+    try {
+        const file = req.file;
+        if (!file) {
+            return res.status(400).json({ error: "No file uploaded" });
+        }
+        const blobName = `image-${(0, uuid_1.v4)()}.jpg`;
+        const blockBlobClient = containerClient.getBlockBlobClient(blobName);
+        yield blockBlobClient.uploadData(file.buffer, {
+            blobHTTPHeaders: {
+                blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
+            },
+        });
+        const chat_url = blockBlobClient.url;
+        const chat = yield prisma.chat.update({
+            where: { chat_id: parseInt(chat_id) },
+            data: {
+                messages: {
+                    create: {
+                        sender_id: parseInt(id),
+                        receiver_id: parseInt(receiver_id),
+                        types: "IMAGE",
+                        message: chat_url
+                    }
+                }
+            }
+        });
+        res.json(chat);
+    }
+    catch (error) {
+        console.log(error);
+        res.status(500).json({ error: "Failed to send chat image" });
+    }
+});
+exports.sendChatImage = sendChatImage;

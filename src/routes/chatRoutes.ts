@@ -11,10 +11,11 @@ import {
   getGroupChatMessage,
   addMemberToGroupChat,
   getGroupChatInfo,
-  leaveGroupChat
+  leaveGroupChat,
 } from "../controllers/chatController";
 import {
-  createGroupChatWithImage
+  createGroupChatWithImage,
+  sendChatImage
 } from "../controllers/imageController";
 import authMiddleware from "../middlewares/authMiddleware";
 import { get } from "http";
@@ -45,6 +46,13 @@ router.post(
   upload.single("file"),
   authMiddleware,
   createGroupChatWithImage
+);
+
+router.post(
+  `${routeType}/sendChatImage`,
+  upload.single("file"),
+  authMiddleware,
+  sendChatImage
 );
 
 export default router;

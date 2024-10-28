@@ -345,7 +345,7 @@ export const getPetList = async (req: Request, res: Response) => {
     res.json(pet);
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: "Failed to update user" });
+    res.status(500).json({ error: "Failed to get pet list" });
   }
 };
 

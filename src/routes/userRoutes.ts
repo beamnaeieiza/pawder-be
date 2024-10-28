@@ -24,7 +24,7 @@ import {
 } from "../controllers/userController";
 import {
   uploadProfileImage,
-  createPetWithImage,
+  createPetWithImages,
 } from "../controllers/imageController";
 
 import {
@@ -61,9 +61,9 @@ router.post(
 );
 router.post(
   "/users/createPetWithImage",
-  upload.single("file"),
+  upload.array("files", 3), // Allow up to 10 files
   authMiddleware,
-  createPetWithImage
+  createPetWithImages
 );
 
 router.get("/users/getStatistic", authMiddleware, getStatistic);
