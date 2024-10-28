@@ -47,11 +47,18 @@ export const randomPet = async (req: Request, res: Response) => {
     });
     const blockedUserIds = blockedUsers.map((blocked) => blocked.blocked_user_id);
 
+    const savedUsers = await prisma.user_Saved.findMany({
+      where: { user_id: id },
+      select: { saved_user_id: true },
+    });
+
+    const savedUserIds = savedUsers.map((saved) => saved.saved_user_id);
+
     const totalCount = await prisma.user.count({
       where: {
         NOT: {
           user_id: {
-            in: [...metPetIds, ...blockedUserIds],
+            in: [...metPetIds, ...blockedUserIds, ...savedUserIds],
           },
         },
       },
@@ -288,12 +295,6 @@ export const savePet = async (req: Request, res: Response) => {
         .status(409)
         .json({ error: "You have already saved this user." });
     }
-    const newMet = await prisma.user_HaveMet.create({
-      data: {
-        user_id: userId,
-        met_user_id: saved_user_id,
-      },
-    });
     const newSave = await prisma.user_Saved.create({
       data: {
         user_id: userId,
