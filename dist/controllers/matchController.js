@@ -120,8 +120,12 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
 exports.randomPet = randomPet;
 const likePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const userId = req.user.userId;
-    let { target_user_id } = req.body;
+    let { target_user_id, pet_ids } = req.body;
     target_user_id = parseInt(target_user_id);
+    if (!Array.isArray(pet_ids)) {
+        return res.status(400).json({ error: "Pet IDs must be an array." });
+    }
+    pet_ids = pet_ids.map((id) => parseInt(id));
     if (!target_user_id) {
         return res.status(400).json({ error: "Target User ID is required." });
     }
@@ -147,11 +151,17 @@ const likePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 },
             },
         });
+        const petInterestsData = pet_ids.map((pet_id) => ({
+            pet_id: pet_id,
+        }));
         if (likeToMatch) {
             const newLike = yield prisma.user_Interest.create({
                 data: {
                     user_id: userId,
                     target_user_id: target_user_id,
+                    pet_interests: {
+                        create: petInterestsData,
+                    },
                 },
             });
             const newMet = yield prisma.user_HaveMet.create({
@@ -195,6 +205,9 @@ const likePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 data: {
                     user_id: userId,
                     target_user_id: target_user_id,
+                    pet_interests: {
+                        create: petInterestsData,
+                    },
                 },
             });
             const newMet = yield prisma.user_HaveMet.create({
@@ -425,8 +438,9 @@ const unMatchUser = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         });
         yield prisma.user_Interest.deleteMany({
             where: {
-                user_id: id, target_user_id: parseInt(target_user_id)
-            }
+                user_id: id,
+                target_user_id: parseInt(target_user_id),
+            },
         });
         res.json("Unmatched successfully");
     }

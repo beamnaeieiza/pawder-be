@@ -45,7 +45,9 @@ export const randomPet = async (req: Request, res: Response) => {
       where: { user_id: id },
       select: { blocked_user_id: true },
     });
-    const blockedUserIds = blockedUsers.map((blocked) => blocked.blocked_user_id);
+    const blockedUserIds = blockedUsers.map(
+      (blocked) => blocked.blocked_user_id
+    );
 
     const savedUsers = await prisma.user_Saved.findMany({
       where: { user_id: id },
@@ -129,8 +131,14 @@ export const randomPet = async (req: Request, res: Response) => {
 
 export const likePet = async (req: Request, res: Response) => {
   const userId = (req as any).user.userId;
-  let { target_user_id } = req.body;
+  let { target_user_id, pet_ids } = req.body;
   target_user_id = parseInt(target_user_id);
+
+  if (!Array.isArray(pet_ids)) {
+    return res.status(400).json({ error: "Pet IDs must be an array." });
+  }
+
+  pet_ids = pet_ids.map((id) => parseInt(id));
 
   if (!target_user_id) {
     return res.status(400).json({ error: "Target User ID is required." });
@@ -160,11 +168,18 @@ export const likePet = async (req: Request, res: Response) => {
       },
     });
 
+    const petInterestsData = pet_ids.map((pet_id: number) => ({
+      pet_id: pet_id,
+    }));
+
     if (likeToMatch) {
       const newLike = await prisma.user_Interest.create({
         data: {
           user_id: userId,
           target_user_id: target_user_id,
+          pet_interests: {
+            create: petInterestsData,
+          },
         },
       });
       const newMet = await prisma.user_HaveMet.create({
@@ -211,6 +226,9 @@ export const likePet = async (req: Request, res: Response) => {
         data: {
           user_id: userId,
           target_user_id: target_user_id,
+          pet_interests: {
+            create: petInterestsData,
+          },
         },
       });
 
@@ -453,12 +471,13 @@ export const unMatchUser = async (req: Request, res: Response) => {
 
     await prisma.user_Interest.deleteMany({
       where: {
-         user_id: id, target_user_id: parseInt(target_user_id)
-      }
+        user_id: id,
+        target_user_id: parseInt(target_user_id),
+      },
     });
 
     res.json("Unmatched successfully");
   } catch (error) {
     res.status(500).json({ error: "Failed to unmatch user" });
   }
-}
+};

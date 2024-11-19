@@ -8,48 +8,45 @@ datasource db {
 }
 
 model User {
-  user_id            Int                  @id @default(autoincrement())
-  token              String?
-  email              String?
-  username           String?
-  password           String?
-  phone_number       String?
-  profile_url        String?
-  firstname          String?
-  lastname           String?
-  id_card            String?
-  verify_status      Boolean?
-  twoFA              Boolean?             @default(false)
-  deactivate         Boolean?             @default(false)
-  subscription       Subscription?
-  location_latitude  String?
-  location_longitude String?
-  createdAt          DateTime?            @default(now())
-  updatedAt          DateTime?            @updatedAt
-  gender             String?
-  birthdate          DateTime?
-  distance_interest  String?              @default("10")
-  events_owned       Event[]              @relation("OwnerEvents")
-  events_enrolled    Event_UserEnrolled[]
-  matchesAsUser1     Match[]              @relation("UserMatches")
-  matchesAsUser2     Match[]              @relation("UserMatches2")
-  chatAsUser1        Chat[]               @relation("UserChat")
-  chatAsUser2        Chat[]               @relation("UserChat2")
-  group_chats        Group_Chat[]
-  notifications      Notification[]
-  pets               Pet[]
-  user_dislike       User_Dislike[]
-  user_haveMet       User_HaveMet[]
-  interests          User_Interest[]      @relation(name: "TargetUser")
-  user_interest      User_Interest[]      @relation(name: "OwnerUser")
-  user_saved         User_Saved[]
-  user_blocked       User_Blocked[]
-  user_unmatch       User_Unmatch[]
-  rating             Rating[]
+  user_id             Int                  @id @default(autoincrement())
+  token               String?
+  email               String?
+  username            String?
+  password            String?
+  phone_number        String?
+  profile_url         String?
+  firstname           String?
+  lastname            String?
+  id_card             String?
+  verify_status       Boolean?
+  twoFA               Boolean?             @default(false)
+  deactivate          Boolean?             @default(false)
+  subscription        Subscription?
+  location_latitude   String?
+  location_longitude  String?
+  createdAt           DateTime?            @default(now())
+  updatedAt           DateTime?            @updatedAt
+  gender              String?
+  birthdate           DateTime?
+  distance_interest   String?              @default("10")
+  events_owned        Event[]              @relation("OwnerEvents")
+  events_enrolled     Event_UserEnrolled[]
+  matchesAsUser1      Match[]              @relation("UserMatches")
+  matchesAsUser2      Match[]              @relation("UserMatches2")
+  chatAsUser1         Chat[]               @relation("UserChat")
+  chatAsUser2         Chat[]               @relation("UserChat2")
+  group_chats         Group_Chat[]
+  notifications       Notification[]
+  pets                Pet[]
+  user_dislike        User_Dislike[]
+  user_haveMet        User_HaveMet[]
+  interests           User_Interest[]      @relation(name: "TargetUser")
+  user_interest       User_Interest[]      @relation(name: "OwnerUser")
+  user_saved          User_Saved[]
+  user_blocked        User_Blocked[]
+  user_unmatch        User_Unmatch[]
+  rating              Rating[]
   sent_group_messages Group_Chat_Message[] @relation("UserSentGroupMessages")
-  
- 
-
 }
 
 model Pet {
@@ -71,6 +68,7 @@ model Pet {
   user            User        @relation(fields: [user_id], references: [user_id])
   breed           Pet_Breed?  @relation(fields: [breed_id], references: [breed_id])
   habits          Pet_Habit[] @relation("PetHabits")
+  // interests       User_Interest[]
   // Pet_Breed_Relation Pet_Breed_Relation[]
 
   @@index([user_id], map: "Pet_user_id_fkey")
@@ -165,25 +163,25 @@ model Chat_Message {
 }
 
 model Group_Chat {
-  group_chat_id Int       @id @default(autoincrement())
+  group_chat_id Int                  @id @default(autoincrement())
   group_name    String?
   group_url     String?
-  createdAt     DateTime? @default(now())
-  updatedAt     DateTime? @updatedAt
+  createdAt     DateTime?            @default(now())
+  updatedAt     DateTime?            @updatedAt
   group_members User[]
   messages      Group_Chat_Message[]
 }
 
 model Group_Chat_Message {
-  group_message_id Int       @id @default(autoincrement())
-  group_chat_id   Int
-  sender_id       Int
-  message         String?
-  types           MessageType?
-  createdAt       DateTime? @default(now())
-  updatedAt       DateTime? @updatedAt
-  sender          User      @relation("UserSentGroupMessages", fields: [sender_id], references: [user_id])
-  group_chat      Group_Chat @relation(fields: [group_chat_id], references: [group_chat_id])
+  group_message_id Int          @id @default(autoincrement())
+  group_chat_id    Int
+  sender_id        Int
+  message          String?
+  types            MessageType?
+  createdAt        DateTime?    @default(now())
+  updatedAt        DateTime?    @updatedAt
+  sender           User         @relation("UserSentGroupMessages", fields: [sender_id], references: [user_id])
+  group_chat       Group_Chat   @relation(fields: [group_chat_id], references: [group_chat_id])
 
   @@index([group_chat_id], map: "Group_Chat_Message_group_chat_id_fkey")
 }
@@ -221,13 +219,35 @@ model User_HaveMet {
 }
 
 model User_Interest {
+  // interest_id    Int   @id @default(autoincrement())
   user_id        Int
   target_user_id Int
-  user           User @relation(name: "TargetUser", fields: [target_user_id], references: [user_id])
-  owner          User @relation(name: "OwnerUser", fields: [user_id], references: [user_id])
+  user           User           @relation(name: "TargetUser", fields: [target_user_id], references: [user_id])
+  owner          User           @relation(name: "OwnerUser", fields: [user_id], references: [user_id])
+  pet_interests  Pet_Interest[]
 
   @@id([user_id, target_user_id])
 }
+
+model Pet_Interest {
+  id             Int           @id @default(autoincrement())
+  user_interest  User_Interest @relation(fields: [user_id, target_user_id], references: [user_id, target_user_id])
+  user_id        Int
+  target_user_id Int
+  pet_id         Int
+}
+
+// model User_Pet_Interest {
+//   pet_interest_id Int          @id @default(autoincrement())
+//   interest_id     Int
+//   pet_id          Int
+//   user_id         Int
+//   pet             Pet          @relation(fields: [pet_id], references: [pet_id])
+//   user_interest   User_Interest @relation(fields: [interest_id], references: [interest_id])
+
+//   @@index([interest_id], map: "User_Pet_Interest_interest_id_fkey")
+//   @@index([pet_id], map: "User_Pet_Interest_pet_id_fkey")
+// }
 
 model User_Unmatch {
   user_id         Int
