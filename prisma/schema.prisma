@@ -68,6 +68,8 @@ model Pet {
   user            User        @relation(fields: [user_id], references: [user_id])
   breed           Pet_Breed?  @relation(fields: [breed_id], references: [breed_id])
   habits          Pet_Habit[] @relation("PetHabits")
+  pet_interests   Pet_Interest[]
+  
   // interests       User_Interest[]
   // Pet_Breed_Relation Pet_Breed_Relation[]
 
@@ -235,6 +237,7 @@ model Pet_Interest {
   user_id        Int
   target_user_id Int
   pet_id         Int
+  pet            Pet           @relation(fields: [pet_id], references: [pet_id])
 }
 
 // model User_Pet_Interest {

@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.unMatchUser = exports.getUserSaved = exports.getUserNotInterests = exports.getUserInterests = exports.savePet = exports.notLikePet = exports.likePet = exports.randomPet = void 0;
+exports.getPetInterest = exports.unMatchUser = exports.getUserSaved = exports.getUserNotInterests = exports.getUserInterests = exports.savePet = exports.notLikePet = exports.likePet = exports.randomPet = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 const haversine_distance_1 = __importDefault(require("haversine-distance"));
@@ -24,92 +24,56 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = yield prisma.user.findUnique({
             where: { user_id: id },
-            select: {
-                location_latitude: true,
-                location_longitude: true,
-                distance_interest: true,
-            },
+            select: { location_latitude: true, location_longitude: true, distance_interest: true },
         });
-        if (!user ||
-            !user.location_latitude === null ||
-            !user.location_longitude === null) {
+        if (!user || user.location_latitude === null || user.location_longitude === null) {
             return res.status(404).json({ error: "User location not found." });
         }
         const userLocation = {
             latitude: parseFloat(user.location_latitude),
             longitude: parseFloat(user.location_longitude),
         };
-        const metPets = yield prisma.user_HaveMet.findMany({
-            where: { user_id: id },
-            select: { met_user_id: true }, // Select only the met_pet_id
-        });
-        const metPetIds = metPets.map((met) => met.met_user_id);
-        const blockedUsers = yield prisma.user_Blocked.findMany({
-            where: { user_id: id },
-            select: { blocked_user_id: true },
-        });
-        const blockedUserIds = blockedUsers.map((blocked) => blocked.blocked_user_id);
-        const savedUsers = yield prisma.user_Saved.findMany({
-            where: { user_id: id },
-            select: { saved_user_id: true },
-        });
-        const savedUserIds = savedUsers.map((saved) => saved.saved_user_id);
-        const totalCount = yield prisma.user.count({
-            where: {
-                NOT: {
-                    user_id: {
-                        in: [...metPetIds, ...blockedUserIds, ...savedUserIds],
-                    },
-                },
-            },
-        });
-        if (totalCount === 0) {
-            return res.status(404).json({ error: "No available user found." });
-        }
-        const randomIndex = Math.floor(Math.random() * totalCount);
-        // console.log(`Total Count: ${totalCount}, Random Index: ${randomIndex}`);
+        const [metPets, blockedUsers, savedUsers] = yield Promise.all([
+            prisma.user_HaveMet.findMany({ where: { user_id: id }, select: { met_user_id: true } }),
+            prisma.user_Blocked.findMany({ where: { user_id: id }, select: { blocked_user_id: true } }),
+            prisma.user_Saved.findMany({ where: { user_id: id }, select: { saved_user_id: true } }),
+        ]);
+        const excludedIds = [
+            ...metPets.map((m) => m.met_user_id),
+            ...blockedUsers.map((b) => b.blocked_user_id),
+            ...savedUsers.map((s) => s.saved_user_id),
+            id, // Exclude the current user
+        ];
+        // Fetch potential pets and filter by location
         const potentialPets = yield prisma.user.findMany({
             where: {
                 deactivate: false,
-                NOT: {
-                    user_id: {
-                        in: [...metPetIds, ...blockedUserIds, id],
-                    },
-                },
+                NOT: { user_id: { in: excludedIds } },
+                location_latitude: { not: null },
+                location_longitude: { not: null },
             },
             include: {
-                pets: {
-                    include: {
-                        habits: true,
-                    },
-                },
+                pets: { include: { habits: true } }, // Include pets and habits
             },
+            take: 50, // Fetch a limited number of users
         });
         const usersWithinDistance = potentialPets
-            .filter((petUser) => {
-            if (petUser.location_latitude === null ||
-                petUser.location_longitude === null)
-                return false;
+            .map((petUser) => {
             const petUserLocation = {
                 latitude: parseFloat(petUser.location_latitude),
                 longitude: parseFloat(petUser.location_longitude),
             };
-            const distance = (0, haversine_distance_1.default)(userLocation, petUserLocation);
-            return distance <= parseFloat(user.distance_interest) * 1000; // 10km in meters
+            const distanceInMeters = (0, haversine_distance_1.default)(userLocation, petUserLocation);
+            return Object.assign(Object.assign({}, petUser), { distance: (distanceInMeters / 1000).toFixed(2) });
         })
-            .map((metUser) => {
-            const distanceInMeters = (0, haversine_distance_1.default)(userLocation, {
-                latitude: parseFloat(metUser.location_latitude),
-                longitude: parseFloat(metUser.location_longitude),
-            });
-            const distanceInKm = (distanceInMeters / 1000).toFixed(2); // Convert meters to kilometers
-            return Object.assign(Object.assign({}, metUser), { distance: distanceInKm });
-        });
-        const usersWithPets = usersWithinDistance.filter((user) => {
-            const hasPets = Array.isArray(user.pets) && user.pets.length > 0;
-            return hasPets;
-        });
-        const shuffledUsers = usersWithPets.sort(() => 0.5 - Math.random());
+            .filter((petUser) => parseFloat(petUser.distance) <=
+            parseFloat(user.distance_interest) // Filter by user-defined distance interest
+        );
+        if (usersWithinDistance.length === 0) {
+            return res.status(404).json({ error: "No pets found within the specified distance." });
+        }
+        // Shuffle the users to return random results
+        const shuffledUsers = usersWithinDistance.sort(() => 0.5 - Math.random());
         res.json(shuffledUsers);
     }
     catch (error) {
@@ -449,3 +413,43 @@ const unMatchUser = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     }
 });
 exports.unMatchUser = unMatchUser;
+const getPetInterest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const id = req.user.userId;
+    let { target_user_id } = req.body;
+    target_user_id = parseInt(target_user_id);
+    try {
+        const targetInterest = yield prisma.pet_Interest.findMany({
+            where: {
+                user_id: parseInt(target_user_id),
+                target_user_id: id
+            },
+            select: {
+                pet: {
+                    select: {
+                        petname: true,
+                        pet_url: true,
+                    }
+                }
+            }
+        });
+        const yourInterest = yield prisma.pet_Interest.findMany({
+            where: {
+                user_id: id,
+                target_user_id: parseInt(target_user_id)
+            },
+            select: {
+                pet: {
+                    select: {
+                        petname: true,
+                        pet_url: true,
+                    }
+                }
+            }
+        });
+        res.json({ targetPetInterest: targetInterest, yourPetInterest: yourInterest });
+    }
+    catch (error) {
+        res.status(500).json({ error: "Failed to get interest info" });
+    }
+});
+exports.getPetInterest = getPetInterest;
