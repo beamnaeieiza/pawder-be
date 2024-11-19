@@ -385,6 +385,7 @@ export const getUserSaved = async (req: Request, res: Response) => {
             birthdate: true,
             pets: {
               select: {
+                pet_id: true,
                 petname: true,
                 pet_url: true,
                 gender: true,
