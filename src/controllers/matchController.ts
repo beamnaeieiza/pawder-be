@@ -442,8 +442,15 @@ export const unMatchUser = async (req: Request, res: Response) => {
 
 export const getPetInterest = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
-  let { target_user_id } = req.body;
-  target_user_id = parseInt(target_user_id);
+  let { target_user_id } = req.query;
+
+  if (target_user_id) {
+    target_user_id = target_user_id.toString();
+  } else {
+    return res.status(400).json({ error: "pet_id is required" });
+  }
+
+  // target_user_id = parseInt(target_user_id);
   try {
     const targetInterest = await prisma.pet_Interest.findMany({
       where: {
