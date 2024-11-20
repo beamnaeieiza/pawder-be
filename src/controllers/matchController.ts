@@ -480,6 +480,15 @@ export const getPetInterest = async (req: Request, res: Response) => {
             pet_id: true,
             petname: true,
             pet_url: true,
+            age: true,
+            gender: true,
+            pet_description: true,
+            breed: {
+                select: {
+                  breed_id: true,
+                  breedName: true,
+                },
+              },
           }
         }
       }
