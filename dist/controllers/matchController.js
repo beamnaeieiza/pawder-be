@@ -436,6 +436,15 @@ const getPetInterest = (req, res) => __awaiter(void 0, void 0, void 0, function*
                         pet_id: true,
                         petname: true,
                         pet_url: true,
+                        age: true,
+                        gender: true,
+                        pet_description: true,
+                        breed: {
+                            select: {
+                                breed_id: true,
+                                breedName: true,
+                            },
+                        },
                     }
                 }
             }
