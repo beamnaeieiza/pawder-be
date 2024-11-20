@@ -157,43 +157,32 @@ export const sendChatMessage = async (req: Request, res: Response) => {
     chat_id = parseInt(chat_id);
     receiver_id = parseInt(receiver_id);
     try {
-        const existingChat = await prisma.chat.findUnique({
-            where: { chat_id: chat_id }
-        });
-
-        if (!existingChat) {
-            return res.status(404).json({ error: "Chat not found" });
-        }
-
         const chat = await prisma.chat.update({
             where: { chat_id: chat_id },
             data: {
                 messages: {
                     create: {
                         sender_id: parseInt(id),
-                        receiver_id: parseInt(receiver_id),
-                        types: types,
-                        message: message
-                    }
-                }
-            }
+                        receiver_id: receiver_id,
+                        types,
+                        message,
+                    },
+                },
+            },
         });
 
-        const user = await prisma.user.findUnique({
-            where: { user_id: parseInt(id) }
-        });
-
-        const notification = await prisma.notification.create({
+        const userPromise = prisma.user.findUnique({ where: { user_id: parseInt(id) } });
+        const notificationPromise = prisma.notification.create({
             data: {
                 user_id: receiver_id,
                 title: "New Message",
-                message: "You have a new message from "+ user?.firstname,
-                read_status: false
-            }
+                message: `You have a new message.`,
+                read_status: false,
+            },
         });
-
-        res.json(chat);
     
+        const [user] = await Promise.all([userPromise, notificationPromise]);
+        res.json(chat);
     } catch (error) {
         console.log(error);
         res.status(500).json({ error: "Failed to send chat message" });

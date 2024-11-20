@@ -168,36 +168,29 @@ const sendChatMessage = (req, res) => __awaiter(void 0, void 0, void 0, function
     chat_id = parseInt(chat_id);
     receiver_id = parseInt(receiver_id);
     try {
-        const existingChat = yield prisma.chat.findUnique({
-            where: { chat_id: chat_id }
-        });
-        if (!existingChat) {
-            return res.status(404).json({ error: "Chat not found" });
-        }
         const chat = yield prisma.chat.update({
             where: { chat_id: chat_id },
             data: {
                 messages: {
                     create: {
                         sender_id: parseInt(id),
-                        receiver_id: parseInt(receiver_id),
-                        types: types,
-                        message: message
-                    }
-                }
-            }
+                        receiver_id: receiver_id,
+                        types,
+                        message,
+                    },
+                },
+            },
         });
-        const user = yield prisma.user.findUnique({
-            where: { user_id: parseInt(id) }
-        });
-        const notification = yield prisma.notification.create({
+        const userPromise = prisma.user.findUnique({ where: { user_id: parseInt(id) } });
+        const notificationPromise = prisma.notification.create({
             data: {
                 user_id: receiver_id,
                 title: "New Message",
-                message: "You have a new message from " + (user === null || user === void 0 ? void 0 : user.firstname),
-                read_status: false
-            }
+                message: `You have a new message.`,
+                read_status: false,
+            },
         });
+        const [user] = yield Promise.all([userPromise, notificationPromise]);
         res.json(chat);
     }
     catch (error) {

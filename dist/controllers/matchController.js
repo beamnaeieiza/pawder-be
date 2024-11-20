@@ -361,6 +361,7 @@ const getUserSaved = (req, res) => __awaiter(void 0, void 0, void 0, function* (
                         birthdate: true,
                         pets: {
                             select: {
+                                pet_id: true,
                                 petname: true,
                                 pet_url: true,
                                 gender: true,
@@ -415,8 +416,14 @@ const unMatchUser = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 exports.unMatchUser = unMatchUser;
 const getPetInterest = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
-    let { target_user_id } = req.body;
-    target_user_id = parseInt(target_user_id);
+    let { target_user_id } = req.query;
+    if (target_user_id) {
+        target_user_id = target_user_id.toString();
+    }
+    else {
+        return res.status(400).json({ error: "pet_id is required" });
+    }
+    // target_user_id = parseInt(target_user_id);
     try {
         const targetInterest = yield prisma.pet_Interest.findMany({
             where: {
