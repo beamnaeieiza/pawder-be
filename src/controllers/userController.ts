@@ -243,7 +243,7 @@ export const updateUser = async (req: Request, res: Response) => {
         location_longitude,
       },
     });
-    res.json(user);
+    res.json("Updated user successfully");
   } catch (error) {
     res.status(500).json({ error: "Failed to update user" });
   }

@@ -233,7 +233,7 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
                 location_longitude,
             },
         });
-        res.json(user);
+        res.json("Updated user successfully");
     }
     catch (error) {
         res.status(500).json({ error: "Failed to update user" });
