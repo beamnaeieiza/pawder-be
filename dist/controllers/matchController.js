@@ -433,6 +433,7 @@ const getPetInterest = (req, res) => __awaiter(void 0, void 0, void 0, function*
             select: {
                 pet: {
                     select: {
+                        pet_id: true,
                         petname: true,
                         pet_url: true,
                     }
@@ -447,6 +448,7 @@ const getPetInterest = (req, res) => __awaiter(void 0, void 0, void 0, function*
             select: {
                 pet: {
                     select: {
+                        pet_id: true,
                         petname: true,
                         pet_url: true,
                     }

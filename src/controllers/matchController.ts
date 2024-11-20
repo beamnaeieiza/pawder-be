@@ -461,6 +461,7 @@ export const getPetInterest = async (req: Request, res: Response) => {
       select: {
         pet: {
           select: {
+            pet_id: true,
             petname: true,
             pet_url: true,
           }
@@ -476,6 +477,7 @@ export const getPetInterest = async (req: Request, res: Response) => {
       select: {
         pet: {
           select: {
+            pet_id: true,
             petname: true,
             pet_url: true,
           }
