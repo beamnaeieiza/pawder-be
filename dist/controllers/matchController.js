@@ -74,6 +74,7 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         }
         // Shuffle the users to return random results
         const shuffledUsers = usersWithinDistance.sort(() => 0.5 - Math.random());
+        // console.log(1)
         res.json(shuffledUsers);
     }
     catch (error) {

@@ -78,7 +78,7 @@ export const randomPet = async (req: Request, res: Response) => {
 
     // Shuffle the users to return random results
     const shuffledUsers = usersWithinDistance.sort(() => 0.5 - Math.random());
-
+    // console.log(1)
     res.json(shuffledUsers);
   } catch (error) {
     console.error(error);
