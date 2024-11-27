@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import bcrypt from "bcrypt";
 
 dotenv.config();
 
@@ -19,7 +20,9 @@ export const signUp = async (req: Request, res: Response) => {
     gender,
     birthdate,
   } = req.body;
+
   try {
+    // Check if the email already exists
     const existingUser = await prisma.user.findFirst({
       where: { email: email },
     });
@@ -28,11 +31,15 @@ export const signUp = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Email is already in use" });
     }
 
+    // Hash the password
+    const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds; adjust for desired security level
+
+    // Create the new user
     const newUser = await prisma.user.create({
       data: {
         email,
         username,
-        password,
+        password: hashedPassword,
         gender,
         phone_number,
         firstname,
@@ -41,16 +48,19 @@ export const signUp = async (req: Request, res: Response) => {
         verify_status: false,
       },
     });
+
     res.status(201).json(newUser);
   } catch (error) {
-    console.log(error);
+    console.error("Error creating user:", error);
     res.status(500).json({ error: "Failed to create user" });
   }
 };
 
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
+
   try {
+    // Check if the user exists
     const existingUser = await prisma.user.findFirst({
       where: { email: email },
     });
@@ -59,22 +69,34 @@ export const login = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "User does not exist" });
     }
 
-    if (existingUser.password !== password) {
+    // Check if the password field is not null
+    if (!existingUser.password) {
+      return res
+        .status(500)
+        .json({ error: "Password is missing for this user" });
+    }
+
+    // Compare the hashed password
+    const isPasswordValid = await bcrypt.compare(
+      password,
+      existingUser.password
+    );
+    if (!isPasswordValid) {
       return res.status(401).json({ error: "Invalid password" });
     }
 
+    // Generate a JWT token
     const token = jwt.sign(
       { userId: existingUser.user_id, username: existingUser.username },
       JWT_SECRET,
-      {
-        expiresIn: "24h",
-      }
+      { expiresIn: "24h" }
     );
 
-    res.status(200).json({ token: token, twoFA : existingUser.twoFA });
+    // Respond with the token
+    res.status(200).json({ token, message: "Login successful" });
   } catch (error) {
-    console.log(error);
-    res.status(500).json({ error: "Failed to login" });
+    console.error(error);
+    res.status(500).json({ error: "An error occurred during login" });
   }
 };
 
@@ -145,7 +167,7 @@ export const getUserIdInfo = async (req: Request, res: Response) => {
         gender: true,
         birthdate: true,
         distance_interest: true,
-        
+
         pets: {
           include: {
             breed: {
@@ -464,7 +486,7 @@ export const verifyId = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ error: "Failed to verify user" });
   }
-}
+};
 
 export const blockUser = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
@@ -481,7 +503,7 @@ export const blockUser = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ error: "Failed to block user" });
   }
-}
+};
 
 export const unblockUser = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
@@ -497,13 +519,13 @@ export const unblockUser = async (req: Request, res: Response) => {
   } catch (error) {
     res.status(500).json({ error: "Failed to unblock user" });
   }
-}
+};
 
 export const changeActivateAccount = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
   try {
     const user = await prisma.user.findUnique({
-      where: { user_id: parseInt(id) }
+      where: { user_id: parseInt(id) },
     });
 
     if (!user) {
@@ -517,13 +539,18 @@ export const changeActivateAccount = async (req: Request, res: Response) => {
       },
     });
 
-    res.json(`Account ${updatedUser.deactivate ? 'deactivated' : 'activated'} successfully`);
+    res.json(
+      `Account ${
+        updatedUser.deactivate ? "deactivated" : "activated"
+      } successfully`
+    );
   } catch (error) {
     console.log(error);
-    res.status(500).json({ error: "Failed to toggle account activation status" });
+    res
+      .status(500)
+      .json({ error: "Failed to toggle account activation status" });
   }
 };
-
 
 export const getBlockedUsers = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
@@ -548,4 +575,4 @@ export const getBlockedUsers = async (req: Request, res: Response) => {
     console.log(error);
     res.status(500).json({ error: "Failed to get blocked users" });
   }
-}
+};
