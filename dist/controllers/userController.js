@@ -16,23 +16,28 @@ exports.getBlockedUsers = exports.changeActivateAccount = exports.unblockUser = 
 const client_1 = require("@prisma/client");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const dotenv_1 = __importDefault(require("dotenv"));
+const bcrypt_1 = __importDefault(require("bcrypt"));
 dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET;
 const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, username, password, phone_number, firstname, lastname, gender, birthdate, } = req.body;
     try {
+        // Check if the email already exists
         const existingUser = yield prisma.user.findFirst({
             where: { email: email },
         });
         if (existingUser) {
             return res.status(400).json({ error: "Email is already in use" });
         }
+        // Hash the password
+        const hashedPassword = yield bcrypt_1.default.hash(password, 10); // 10 is the salt rounds; adjust for desired security level
+        // Create the new user
         const newUser = yield prisma.user.create({
             data: {
                 email,
                 username,
-                password,
+                password: hashedPassword,
                 gender,
                 phone_number,
                 firstname,
@@ -44,7 +49,7 @@ const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         res.status(201).json(newUser);
     }
     catch (error) {
-        console.log(error);
+        console.error("Error creating user:", error);
         res.status(500).json({ error: "Failed to create user" });
     }
 });
@@ -52,23 +57,32 @@ exports.signUp = signUp;
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
     try {
+        // Check if the user exists
         const existingUser = yield prisma.user.findFirst({
             where: { email: email },
         });
         if (!existingUser) {
             return res.status(400).json({ error: "User does not exist" });
         }
-        if (existingUser.password !== password) {
+        // Check if the password field is not null
+        if (!existingUser.password) {
+            return res
+                .status(500)
+                .json({ error: "Password is missing for this user" });
+        }
+        // Compare the hashed password
+        const isPasswordValid = yield bcrypt_1.default.compare(password, existingUser.password);
+        if (!isPasswordValid) {
             return res.status(401).json({ error: "Invalid password" });
         }
-        const token = jsonwebtoken_1.default.sign({ userId: existingUser.user_id, username: existingUser.username }, JWT_SECRET, {
-            expiresIn: "24h",
-        });
-        res.status(200).json({ token: token, twoFA: existingUser.twoFA });
+        // Generate a JWT token
+        const token = jsonwebtoken_1.default.sign({ userId: existingUser.user_id, username: existingUser.username }, JWT_SECRET, { expiresIn: "24h" });
+        // Respond with the token
+        res.status(200).json({ token, message: "Login successful" });
     }
     catch (error) {
-        console.log(error);
-        res.status(500).json({ error: "Failed to login" });
+        console.error(error);
+        res.status(500).json({ error: "An error occurred during login" });
     }
 });
 exports.login = login;
@@ -483,7 +497,7 @@ const changeActivateAccount = (req, res) => __awaiter(void 0, void 0, void 0, fu
     const id = req.user.userId;
     try {
         const user = yield prisma.user.findUnique({
-            where: { user_id: parseInt(id) }
+            where: { user_id: parseInt(id) },
         });
         if (!user) {
             return res.status(404).json({ error: "User not found" });
@@ -494,11 +508,13 @@ const changeActivateAccount = (req, res) => __awaiter(void 0, void 0, void 0, fu
                 deactivate: !user.deactivate,
             },
         });
-        res.json(`Account ${updatedUser.deactivate ? 'deactivated' : 'activated'} successfully`);
+        res.json(`Account ${updatedUser.deactivate ? "deactivated" : "activated"} successfully`);
     }
     catch (error) {
         console.log(error);
-        res.status(500).json({ error: "Failed to toggle account activation status" });
+        res
+            .status(500)
+            .json({ error: "Failed to toggle account activation status" });
     }
 });
 exports.changeActivateAccount = changeActivateAccount;
