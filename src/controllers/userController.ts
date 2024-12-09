@@ -576,3 +576,19 @@ export const getBlockedUsers = async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to get blocked users" });
   }
 };
+
+export const updateExpoToken = async (req: Request, res: Response) => {
+  const id = (req as any).user.userId;
+  const { expo_token } = req.body;
+  try {
+    const user = await prisma.user.update({
+      where: { user_id: parseInt(id) },
+      data: {
+        expo_token: expo_token
+      },
+    });
+    res.json(user.expo_token);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update expo token" });
+  }
+};

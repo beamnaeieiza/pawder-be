@@ -6,11 +6,13 @@ import { parse } from "path";
 import { BlobServiceClient } from "@azure/storage-blob";
 import multer from "multer";
 import { v4 as uuidv4 } from 'uuid';
+import { Expo } from 'expo-server-sdk';
 
 dotenv.config();
 
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET as string;
+const expo = new Expo();
 
 export const getMatchList = async (req: Request, res: Response) => {
     const id = (req as any).user.userId;
@@ -171,17 +173,52 @@ export const sendChatMessage = async (req: Request, res: Response) => {
             },
         });
 
-        const userPromise = prisma.user.findUnique({ where: { user_id: parseInt(id) } });
-        const notificationPromise = prisma.notification.create({
+        const receiver = await prisma.user.findUnique({ where: { user_id: receiver_id } });
+
+        if (!receiver) {
+            return res.status(404).json({ error: "Receiver not found" });
+        }
+
+        const userPromise = await prisma.user.findUnique({ where: { user_id: parseInt(id) } });
+        const notificationPromise = await prisma.notification.create({
             data: {
                 user_id: receiver_id,
                 title: "New Message",
-                message: `You have a new message.`,
+                message: `You have a new message from ${userPromise?.firstname}.`,
                 read_status: false,
             },
         });
-    
-        const [user] = await Promise.all([userPromise, notificationPromise]);
+
+        if (receiver.expo_token && Expo.isExpoPushToken(receiver.expo_token)) {
+            try {
+                const pushMessages = [
+                    {
+                        to: receiver.expo_token,
+                        sound: 'default',
+                        title: "New Message",
+                        body: `You have a new message from ${userPromise?.firstname}: "${message}"`,
+                        data: { chat_id, sender_id: id },
+                        android: {
+                            channelId: 'default',
+                            priority: 'high',
+                            sound: 'default',
+                            vibrate: [0, 250, 250, 250], // Optional: vibration pattern
+                          },
+                          ios: {
+                            sound: 'default',
+                            badge: 1, // Optional: Update app badge count on iOS
+                          }
+                    },
+                    
+                ];
+
+                const tickets = await expo.sendPushNotificationsAsync(pushMessages);
+                console.log('Push Notification Tickets:', tickets);
+            } catch (pushError) {
+                console.error('Failed to send push notification:', pushError);
+            }
+        }
+
         res.json(chat);
     } catch (error) {
         console.log(error);

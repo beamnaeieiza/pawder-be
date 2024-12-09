@@ -19,7 +19,8 @@ import {
   blockUser,
   unblockUser,
   changeActivateAccount,
-  getBlockedUsers
+  getBlockedUsers,
+  updateExpoToken
 
 } from "../controllers/userController";
 import {
@@ -85,5 +86,7 @@ router.get("/users/getBlockedUsers", authMiddleware, getBlockedUsers);
 router.post("/users/updateUserWith2FA", authMiddleware, updateUserWith2FA);
 router.get("/users/generateQRCode", authMiddleware, generateQRCode);
 router.post("/users/verifyUserOTP", authMiddleware, verifyUserOTP);
+
+router.post("/users/updateExpoToken", authMiddleware, updateExpoToken);
 
 export default router;

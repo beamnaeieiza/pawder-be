@@ -116,66 +116,75 @@ export const enrollEvent = async (req: Request, res: Response) => {
     event_id = parseInt(event_id);
     try {
         const existingEvent = await prisma.event.findUnique({
-            where: { event_id: event_id }
+            where: { event_id: event_id },
+            include: {
+                enrollments: true, // Include enrollments to check for existing enrollment
+            }
         });
 
         if (!existingEvent) {
             return res.status(404).json({ error: "Event not found" });
         }
 
-        const existingEnrollment = await prisma.event.findFirst({
-            where: {
-                event_id: event_id,
-                enrollments: {
-                    some: {
-                        user_id: parseInt(id),
-                    }
-                }
-            }
-        });
+        // Check if the user is already enrolled
+        const existingEnrollment = existingEvent.enrollments.find(
+            (enrollment) => enrollment.user_id === parseInt(id)
+        );
 
         if (existingEnrollment) {
-            return res.status(400).json({ error: "You already enrolled in the event" });
-        }
+            // If the user is already enrolled, unenroll them
+            await prisma.event.update({
+                where: { event_id: event_id },
+                data: {
+                    enrollments: {
+                        deleteMany: {
+                            user_id: id, // Match the user to unenroll
+                        },
+                    },
+                },
+            });
 
-        const event = await prisma.event.update({
-            where: { event_id: event_id },
-            data: {
-                enrollments: {
-                    create: {
-                        user_id: parseInt(id),
+            return res.json({ message: "Successfully unenrolled from the event" });
+        } else {
+            // If the user is not enrolled, enroll them
+            const event = await prisma.event.update({
+                where: { event_id: event_id },
+                data: {
+                    enrollments: {
+                        create: {
+                            user_id: parseInt(id),
+                        }
                     }
                 }
+            });
+
+            const owner = await prisma.event.findUnique({
+                where: { event_id: event_id },
+                include: {
+                    owner: true
+                }
+            });
+
+            const user = await prisma.user.findUnique({
+                where: { user_id: parseInt(id) },
+            });
+
+            if (owner?.owner.user_id) {
+                await prisma.notification.create({
+                    data: {
+                        user_id: owner.owner.user_id,
+                        title: "New Enrollment",
+                        message: `${user?.firstname} has enrolled in your event '${owner?.eventTitle}'!`,
+                        read_status: false
+                    }
+                });
             }
-        });
 
-        const owner = await prisma.event.findUnique({
-            where: { event_id: parseInt(event_id) },
-            include: {
-                owner: true
-            }
-        });
-
-        const user = await prisma.user.findUnique({
-            where: { user_id: parseInt(id) },
-            
-        });
-     
-          if (owner?.owner.user_id) {
-              const notification = await prisma.notification.create({
-                  data: {
-                      user_id: owner.owner.user_id,
-                      title: "New Enrollment",
-                      message: user?.firstname + " has enrolled in your event '" + owner?.eventTitle+ "' !",
-                      read_status: false
-                  }
-              });
-          }
-
-        res.json(event);
+            return res.json(event);
+        }
     } catch (error) {
         console.log(error);
-        res.status(500).json({ error: "Failed to enroll event" });
+        res.status(500).json({ error: "Failed to toggle enrollment" });
     }
 };
 

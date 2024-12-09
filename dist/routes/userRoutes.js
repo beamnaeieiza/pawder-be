@@ -40,4 +40,5 @@ router.get("/users/getBlockedUsers", authMiddleware_1.default, userController_1.
 router.post("/users/updateUserWith2FA", authMiddleware_1.default, _2faController_1.updateUserWith2FA);
 router.get("/users/generateQRCode", authMiddleware_1.default, _2faController_1.generateQRCode);
 router.post("/users/verifyUserOTP", authMiddleware_1.default, _2faController_1.verifyUserOTP);
+router.post("/users/updateExpoToken", authMiddleware_1.default, userController_1.updateExpoToken);
 exports.default = router;

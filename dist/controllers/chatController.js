@@ -26,9 +26,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.leaveGroupChat = exports.getGroupChatInfo = exports.addMemberToGroupChat = exports.sendGroupChatMessage = exports.getGroupChatMessage = exports.createGroupChat = exports.markChatRead = exports.getChatMessage = exports.sendChatMessage = exports.createChat = exports.getChatList = exports.getMatchList = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
+const expo_server_sdk_1 = require("expo-server-sdk");
 dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET;
+const expo = new expo_server_sdk_1.Expo();
 const getMatchList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
     try {
@@ -181,16 +183,47 @@ const sendChatMessage = (req, res) => __awaiter(void 0, void 0, void 0, function
                 },
             },
         });
-        const userPromise = prisma.user.findUnique({ where: { user_id: parseInt(id) } });
-        const notificationPromise = prisma.notification.create({
+        const receiver = yield prisma.user.findUnique({ where: { user_id: receiver_id } });
+        if (!receiver) {
+            return res.status(404).json({ error: "Receiver not found" });
+        }
+        const userPromise = yield prisma.user.findUnique({ where: { user_id: parseInt(id) } });
+        const notificationPromise = yield prisma.notification.create({
             data: {
                 user_id: receiver_id,
                 title: "New Message",
-                message: `You have a new message.`,
+                message: `You have a new message from ${userPromise === null || userPromise === void 0 ? void 0 : userPromise.firstname}.`,
                 read_status: false,
             },
         });
-        const [user] = yield Promise.all([userPromise, notificationPromise]);
+        if (receiver.expo_token && expo_server_sdk_1.Expo.isExpoPushToken(receiver.expo_token)) {
+            try {
+                const pushMessages = [
+                    {
+                        to: receiver.expo_token,
+                        sound: 'default',
+                        title: "New Message",
+                        body: `You have a new message from ${userPromise === null || userPromise === void 0 ? void 0 : userPromise.firstname}: "${message}"`,
+                        data: { chat_id, sender_id: id },
+                        android: {
+                            channelId: 'default',
+                            priority: 'high',
+                            sound: 'default',
+                            vibrate: [0, 250, 250, 250], // Optional: vibration pattern
+                        },
+                        ios: {
+                            sound: 'default',
+                            badge: 1, // Optional: Update app badge count on iOS
+                        }
+                    },
+                ];
+                const tickets = yield expo.sendPushNotificationsAsync(pushMessages);
+                console.log('Push Notification Tickets:', tickets);
+            }
+            catch (pushError) {
+                console.error('Failed to send push notification:', pushError);
+            }
+        }
         res.json(chat);
     }
     catch (error) {

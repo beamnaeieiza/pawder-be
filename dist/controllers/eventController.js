@@ -126,58 +126,67 @@ const enrollEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     event_id = parseInt(event_id);
     try {
         const existingEvent = yield prisma.event.findUnique({
-            where: { event_id: event_id }
+            where: { event_id: event_id },
+            include: {
+                enrollments: true, // Include enrollments to check for existing enrollment
+            }
         });
         if (!existingEvent) {
             return res.status(404).json({ error: "Event not found" });
         }
-        const existingEnrollment = yield prisma.event.findFirst({
-            where: {
-                event_id: event_id,
-                enrollments: {
-                    some: {
-                        user_id: parseInt(id),
-                    }
-                }
-            }
-        });
+        // Check if the user is already enrolled
+        const existingEnrollment = existingEvent.enrollments.find((enrollment) => enrollment.user_id === parseInt(id));
         if (existingEnrollment) {
-            return res.status(400).json({ error: "You already enrolled in the event" });
-        }
-        const event = yield prisma.event.update({
-            where: { event_id: event_id },
-            data: {
-                enrollments: {
-                    create: {
-                        user_id: parseInt(id),
-                    }
-                }
-            }
-        });
-        const owner = yield prisma.event.findUnique({
-            where: { event_id: parseInt(event_id) },
-            include: {
-                owner: true
-            }
-        });
-        const user = yield prisma.user.findUnique({
-            where: { user_id: parseInt(id) },
-        });
-        if (owner === null || owner === void 0 ? void 0 : owner.owner.user_id) {
-            const notification = yield prisma.notification.create({
+            // If the user is already enrolled, unenroll them
+            yield prisma.event.update({
+                where: { event_id: event_id },
                 data: {
-                    user_id: owner.owner.user_id,
-                    title: "New Enrollment",
-                    message: (user === null || user === void 0 ? void 0 : user.firstname) + " has enrolled in your event '" + (owner === null || owner === void 0 ? void 0 : owner.eventTitle) + "' !",
-                    read_status: false
+                    enrollments: {
+                        deleteMany: {
+                            user_id: id, // Match the user to unenroll
+                        },
+                    },
+                },
+            });
+            return res.json({ message: "Successfully unenrolled from the event" });
+        }
+        else {
+            // If the user is not enrolled, enroll them
+            const event = yield prisma.event.update({
+                where: { event_id: event_id },
+                data: {
+                    enrollments: {
+                        create: {
+                            user_id: parseInt(id),
+                        }
+                    }
                 }
             });
+            const owner = yield prisma.event.findUnique({
+                where: { event_id: event_id },
+                include: {
+                    owner: true
+                }
+            });
+            const user = yield prisma.user.findUnique({
+                where: { user_id: parseInt(id) },
+            });
+            if (owner === null || owner === void 0 ? void 0 : owner.owner.user_id) {
+                yield prisma.notification.create({
+                    data: {
+                        user_id: owner.owner.user_id,
+                        title: "New Enrollment",
+                        message: `${user === null || user === void 0 ? void 0 : user.firstname} has enrolled in your event '${owner === null || owner === void 0 ? void 0 : owner.eventTitle}'!`,
+                        read_status: false
+                    }
+                });
+            }
+            return res.json(event);
         }
-        res.json(event);
     }
     catch (error) {
         console.log(error);
-        res.status(500).json({ error: "Failed to enroll event" });
+        res.status(500).json({ error: "Failed to toggle enrollment" });
     }
 });
 exports.enrollEvent = enrollEvent;

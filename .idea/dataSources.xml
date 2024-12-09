@@ -5,7 +5,7 @@
       <driver-ref>mariadb</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.mariadb.jdbc.Driver</jdbc-driver>
-      <jdbc-url>jdbc:mariadb://0.tcp.ap.ngrok.io:17322/pawderdb</jdbc-url>
+      <jdbc-url>jdbc:mariadb://0.tcp.ap.ngrok.io:11295/pawderdb</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
   </component>
