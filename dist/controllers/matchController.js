@@ -16,9 +16,11 @@ exports.getPetInterest = exports.unMatchUser = exports.getUserSaved = exports.ge
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
 const haversine_distance_1 = __importDefault(require("haversine-distance"));
+const expo_server_sdk_1 = require("expo-server-sdk");
 dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET;
+const expo = new expo_server_sdk_1.Expo();
 const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
     try {
@@ -163,6 +165,38 @@ const likePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     read_status: false,
                 },
             });
+            if ((user === null || user === void 0 ? void 0 : user.expo_token) && expo_server_sdk_1.Expo.isExpoPushToken(user.expo_token)) {
+                try {
+                    yield expo.sendPushNotificationsAsync([
+                        {
+                            to: user.expo_token,
+                            sound: 'default',
+                            title: "New Match",
+                            body: `You have matched with ${userTarget === null || userTarget === void 0 ? void 0 : userTarget.firstname}!`,
+                            data: { match: newMatch },
+                        },
+                    ]);
+                }
+                catch (notificationError) {
+                    console.error("Failed to send notification to user:", notificationError);
+                }
+            }
+            if ((userTarget === null || userTarget === void 0 ? void 0 : userTarget.expo_token) && expo_server_sdk_1.Expo.isExpoPushToken(userTarget.expo_token)) {
+                try {
+                    yield expo.sendPushNotificationsAsync([
+                        {
+                            to: userTarget.expo_token,
+                            sound: 'default',
+                            title: "New Match",
+                            body: `You have matched with ${user === null || user === void 0 ? void 0 : user.firstname}!`,
+                            data: { match: newMatch },
+                        },
+                    ]);
+                }
+                catch (notificationError) {
+                    console.error("Failed to send notification to target user:", notificationError);
+                }
+            }
             res.status(201).json(newMatch);
         }
         else {

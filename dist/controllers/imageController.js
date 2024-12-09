@@ -18,6 +18,7 @@ const dotenv_1 = __importDefault(require("dotenv"));
 const storage_blob_1 = require("@azure/storage-blob");
 const multer_1 = __importDefault(require("multer"));
 const uuid_1 = require("uuid");
+const expo_server_sdk_1 = require("expo-server-sdk");
 dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -25,6 +26,7 @@ const connectionString = 'DefaultEndpointsProtocol=https;AccountName=pawder;Acco
 const blobServiceClient = storage_blob_1.BlobServiceClient.fromConnectionString(connectionString);
 const containerName = "picture";
 const containerClient = blobServiceClient.getContainerClient(containerName);
+const expo = new expo_server_sdk_1.Expo();
 const upload = (0, multer_1.default)({
     storage: multer_1.default.memoryStorage(), // Store files in memory for processing
 });
@@ -258,6 +260,39 @@ const sendChatImage = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                 }
             }
         });
+        const receiver = yield prisma.user.findUnique({ where: { user_id: receiver_id } });
+        if (!receiver) {
+            return res.status(404).json({ error: "Receiver not found" });
+        }
+        const userPromise = yield prisma.user.findUnique({ where: { user_id: parseInt(id) } });
+        if (receiver.expo_token && expo_server_sdk_1.Expo.isExpoPushToken(receiver.expo_token)) {
+            try {
+                const pushMessages = [
+                    {
+                        to: receiver.expo_token,
+                        sound: 'default',
+                        title: "New Message",
+                        body: `You have a new message from ${userPromise === null || userPromise === void 0 ? void 0 : userPromise.firstname}.`,
+                        data: { chat_id, sender_id: id },
+                        android: {
+                            channelId: 'default',
+                            priority: 'high',
+                            sound: 'default',
+                            vibrate: [0, 250, 250, 250], // Optional: vibration pattern
+                        },
+                        ios: {
+                            sound: 'default',
+                            badge: 1, // Optional: Update app badge count on iOS
+                        }
+                    },
+                ];
+                const tickets = yield expo.sendPushNotificationsAsync(pushMessages);
+                // console.log('Push Notification Tickets:', tickets);
+            }
+            catch (pushError) {
+                console.error('Failed to send push notification:', pushError);
+            }
+        }
         res.json(chat);
     }
     catch (error) {

@@ -6,6 +6,7 @@ import { BlobServiceClient } from "@azure/storage-blob";
 import multer from "multer";
 import { v4 as uuidv4 } from 'uuid';
 import { parse } from "path";
+import { Expo } from "expo-server-sdk";
 
 dotenv.config();
 
@@ -15,6 +16,7 @@ const connectionString = 'DefaultEndpointsProtocol=https;AccountName=pawder;Acco
 const blobServiceClient = BlobServiceClient.fromConnectionString(connectionString);
 const containerName = "picture";
 const containerClient = blobServiceClient.getContainerClient(containerName);
+const expo = new Expo();
 
 const upload = multer({
     storage: multer.memoryStorage(), // Store files in memory for processing
@@ -290,6 +292,44 @@ export const sendChatImage = async (req: Request, res: Response) => {
         }
       }
   });
+
+  const receiver = await prisma.user.findUnique({ where: { user_id: receiver_id } });
+
+        if (!receiver) {
+            return res.status(404).json({ error: "Receiver not found" });
+        }
+
+        const userPromise = await prisma.user.findUnique({ where: { user_id: parseInt(id) } });
+
+  if (receiver.expo_token && Expo.isExpoPushToken(receiver.expo_token)) {
+    try {
+        const pushMessages = [
+            {
+                to: receiver.expo_token,
+                sound: 'default',
+                title: "New Message",
+                body: `You have a new message from ${userPromise?.firstname}.`,
+                data: { chat_id, sender_id: id },
+                android: {
+                    channelId: 'default',
+                    priority: 'high',
+                    sound: 'default',
+                    vibrate: [0, 250, 250, 250], // Optional: vibration pattern
+                  },
+                  ios: {
+                    sound: 'default',
+                    badge: 1, // Optional: Update app badge count on iOS
+                  }
+            },
+            
+        ];
+
+        const tickets = await expo.sendPushNotificationsAsync(pushMessages);
+        // console.log('Push Notification Tickets:', tickets);
+    } catch (pushError) {
+        console.error('Failed to send push notification:', pushError);
+    }
+}
         res.json(chat);
   } catch (error) {
     console.log(error)

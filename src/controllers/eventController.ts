@@ -3,11 +3,13 @@ import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import { parse } from "path";
+import { Expo } from "expo-server-sdk";
 
 dotenv.config();
 
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET as string;
+const expo = new Expo();
 
 export const getEventList = async (req: Request, res: Response) => {
     const id = (req as any).user.userId;
@@ -118,7 +120,7 @@ export const enrollEvent = async (req: Request, res: Response) => {
         const existingEvent = await prisma.event.findUnique({
             where: { event_id: event_id },
             include: {
-                enrollments: true, // Include enrollments to check for existing enrollment
+                enrollments: true,
             }
         });
 
@@ -126,19 +128,18 @@ export const enrollEvent = async (req: Request, res: Response) => {
             return res.status(404).json({ error: "Event not found" });
         }
 
-        // Check if the user is already enrolled
         const existingEnrollment = existingEvent.enrollments.find(
             (enrollment) => enrollment.user_id === parseInt(id)
         );
 
         if (existingEnrollment) {
-            // If the user is already enrolled, unenroll them
+
             await prisma.event.update({
                 where: { event_id: event_id },
                 data: {
                     enrollments: {
                         deleteMany: {
-                            user_id: id, // Match the user to unenroll
+                            user_id: id, 
                         },
                     },
                 },
@@ -146,7 +147,7 @@ export const enrollEvent = async (req: Request, res: Response) => {
 
             return res.json({ message: "Successfully unenrolled from the event" });
         } else {
-            // If the user is not enrolled, enroll them
+
             const event = await prisma.event.update({
                 where: { event_id: event_id },
                 data: {
@@ -178,6 +179,24 @@ export const enrollEvent = async (req: Request, res: Response) => {
                         read_status: false
                     }
                 });
+            }
+
+            if (owner?.owner.user_id) {
+                
+                if (owner.owner.expo_token && Expo.isExpoPushToken(owner.owner.expo_token)) {
+                    try {
+                        await expo.sendPushNotificationsAsync([
+                            {
+                                to: owner.owner.expo_token,
+                                sound: 'default',
+                                title: "New Enrollment",
+                                body: `${user?.firstname} has enrolled in your event '${owner?.eventTitle}'!`,
+                            },
+                        ]);
+                    } catch (error) {
+                        console.error("Failed to send push notification to owner", error);
+                    }
+                }
             }
 
             return res.json(event);

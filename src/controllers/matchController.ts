@@ -3,11 +3,13 @@ import { PrismaClient } from "@prisma/client";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 import haversine from "haversine-distance";
+import { Expo } from "expo-server-sdk";
 
 dotenv.config();
 
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET as string;
+const expo = new Expo();
 
 export const randomPet = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
@@ -177,6 +179,38 @@ export const likePet = async (req: Request, res: Response) => {
           read_status: false,
         },
       });
+
+      if (user?.expo_token && Expo.isExpoPushToken(user.expo_token)) {
+        try {
+            await expo.sendPushNotificationsAsync([
+                {
+                    to: user.expo_token,
+                    sound: 'default',
+                    title: "New Match",
+                    body: `You have matched with ${userTarget?.firstname}!`,
+                    data: { match: newMatch },
+                },
+            ]);
+        } catch (notificationError) {
+            console.error("Failed to send notification to user:", notificationError);
+        }
+    }
+
+    if (userTarget?.expo_token && Expo.isExpoPushToken(userTarget.expo_token)) {
+      try {
+          await expo.sendPushNotificationsAsync([
+              {
+                  to: userTarget.expo_token,
+                  sound: 'default',
+                  title: "New Match",
+                  body: `You have matched with ${user?.firstname}!`,
+                  data: { match: newMatch },
+              },
+          ]);
+      } catch (notificationError) {
+          console.error("Failed to send notification to target user:", notificationError);
+      }
+  }
       res.status(201).json(newMatch);
     } else {
       const newLike = await prisma.user_Interest.create({

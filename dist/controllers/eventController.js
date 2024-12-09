@@ -15,9 +15,11 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.deleteEvent = exports.editEvent = exports.enrollEvent = exports.createEvent = exports.getEnrollList = exports.getEventInfo = exports.getEventList = void 0;
 const client_1 = require("@prisma/client");
 const dotenv_1 = __importDefault(require("dotenv"));
+const expo_server_sdk_1 = require("expo-server-sdk");
 dotenv_1.default.config();
 const prisma = new client_1.PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET;
+const expo = new expo_server_sdk_1.Expo();
 const getEventList = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
     try {
@@ -128,22 +130,20 @@ const enrollEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         const existingEvent = yield prisma.event.findUnique({
             where: { event_id: event_id },
             include: {
-                enrollments: true, // Include enrollments to check for existing enrollment
+                enrollments: true,
             }
         });
         if (!existingEvent) {
             return res.status(404).json({ error: "Event not found" });
         }
-        // Check if the user is already enrolled
         const existingEnrollment = existingEvent.enrollments.find((enrollment) => enrollment.user_id === parseInt(id));
         if (existingEnrollment) {
-            // If the user is already enrolled, unenroll them
             yield prisma.event.update({
                 where: { event_id: event_id },
                 data: {
                     enrollments: {
                         deleteMany: {
-                            user_id: id, // Match the user to unenroll
+                            user_id: id,
                         },
                     },
                 },
@@ -151,7 +151,6 @@ const enrollEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
             return res.json({ message: "Successfully unenrolled from the event" });
         }
         else {
-            // If the user is not enrolled, enroll them
             const event = yield prisma.event.update({
                 where: { event_id: event_id },
                 data: {
@@ -180,6 +179,23 @@ const enrollEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                         read_status: false
                     }
                 });
+            }
+            if (owner === null || owner === void 0 ? void 0 : owner.owner.user_id) {
+                if (owner.owner.expo_token && expo_server_sdk_1.Expo.isExpoPushToken(owner.owner.expo_token)) {
+                    try {
+                        yield expo.sendPushNotificationsAsync([
+                            {
+                                to: owner.owner.expo_token,
+                                sound: 'default',
+                                title: "New Enrollment",
+                                body: `${user === null || user === void 0 ? void 0 : user.firstname} has enrolled in your event '${owner === null || owner === void 0 ? void 0 : owner.eventTitle}'!`,
+                            },
+                        ]);
+                    }
+                    catch (error) {
+                        console.error("Failed to send push notification to owner", error);
+                    }
+                }
             }
             return res.json(event);
         }
