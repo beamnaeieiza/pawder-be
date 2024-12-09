@@ -191,6 +191,7 @@ export const enrollEvent = async (req: Request, res: Response) => {
                                 sound: 'default',
                                 title: "New Enrollment",
                                 body: `${user?.firstname} has enrolled in your event '${owner?.eventTitle}'!`,
+                                data: { event_id: event_id },
                             },
                         ]);
                     } catch (error) {

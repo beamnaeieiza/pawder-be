@@ -189,6 +189,7 @@ const enrollEvent = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                                 sound: 'default',
                                 title: "New Enrollment",
                                 body: `${user === null || user === void 0 ? void 0 : user.firstname} has enrolled in your event '${owner === null || owner === void 0 ? void 0 : owner.eventTitle}'!`,
+                                data: { event_id: event_id },
                             },
                         ]);
                     }
