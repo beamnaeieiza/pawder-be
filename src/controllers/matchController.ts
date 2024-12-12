@@ -68,7 +68,9 @@ export const randomPet = async (req: Request, res: Response) => {
         location_longitude: { not: null },
       },
       include: {
-        pets: { include: { habits: true } }, // Include pets and habits
+        pets: {
+          include: { habits: true },
+        }, // Include pets and habits
       },
       take: 50, // Fetch a limited number of users
     });
@@ -87,8 +89,9 @@ export const randomPet = async (req: Request, res: Response) => {
       })
       .filter(
         (petUser) =>
+          petUser.pets.length > 0 &&
           parseFloat(petUser.distance as string) <=
-          parseFloat(user.distance_interest as string) // Filter by user-defined distance interest
+            parseFloat(user.distance_interest as string) // Filter by user-defined distance interest
       );
 
     if (usersWithinDistance.length === 0) {

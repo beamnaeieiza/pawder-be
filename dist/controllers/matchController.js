@@ -70,7 +70,9 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                 location_longitude: { not: null },
             },
             include: {
-                pets: { include: { habits: true } }, // Include pets and habits
+                pets: {
+                    include: { habits: true },
+                }, // Include pets and habits
             },
             take: 50, // Fetch a limited number of users
         });
@@ -83,8 +85,9 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             const distanceInMeters = (0, haversine_distance_1.default)(userLocation, petUserLocation);
             return Object.assign(Object.assign({}, petUser), { distance: (distanceInMeters / 1000).toFixed(2) });
         })
-            .filter((petUser) => parseFloat(petUser.distance) <=
-            parseFloat(user.distance_interest) // Filter by user-defined distance interest
+            .filter((petUser) => petUser.pets.length > 0 &&
+            parseFloat(petUser.distance) <=
+                parseFloat(user.distance_interest) // Filter by user-defined distance interest
         );
         if (usersWithinDistance.length === 0) {
             return res
