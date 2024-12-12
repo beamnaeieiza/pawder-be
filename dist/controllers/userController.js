@@ -78,7 +78,9 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         // Generate a JWT token
         const token = jsonwebtoken_1.default.sign({ userId: existingUser.user_id, username: existingUser.username }, JWT_SECRET, { expiresIn: "24h" });
         // Respond with the token
-        res.status(200).json({ token, message: "Login successful" });
+        res
+            .status(200)
+            .json({ token, message: "Login successful", twoFA: existingUser.twoFA });
     }
     catch (error) {
         console.error(error);
@@ -550,7 +552,7 @@ const updateExpoToken = (req, res) => __awaiter(void 0, void 0, void 0, function
         const user = yield prisma.user.update({
             where: { user_id: parseInt(id) },
             data: {
-                expo_token: expo_token
+                expo_token: expo_token,
             },
         });
         res.json(user.expo_token);

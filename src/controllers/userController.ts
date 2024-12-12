@@ -93,7 +93,9 @@ export const login = async (req: Request, res: Response) => {
     );
 
     // Respond with the token
-    res.status(200).json({ token, message: "Login successful" });
+    res
+      .status(200)
+      .json({ token, message: "Login successful", twoFA: existingUser.twoFA });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "An error occurred during login" });
@@ -584,7 +586,7 @@ export const updateExpoToken = async (req: Request, res: Response) => {
     const user = await prisma.user.update({
       where: { user_id: parseInt(id) },
       data: {
-        expo_token: expo_token
+        expo_token: expo_token,
       },
     });
     res.json(user.expo_token);
