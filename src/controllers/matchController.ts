@@ -17,10 +17,18 @@ export const randomPet = async (req: Request, res: Response) => {
   try {
     const user = await prisma.user.findUnique({
       where: { user_id: id },
-      select: { location_latitude: true, location_longitude: true, distance_interest: true },
+      select: {
+        location_latitude: true,
+        location_longitude: true,
+        distance_interest: true,
+      },
     });
 
-    if (!user || user.location_latitude === null || user.location_longitude === null) {
+    if (
+      !user ||
+      user.location_latitude === null ||
+      user.location_longitude === null
+    ) {
       return res.status(404).json({ error: "User location not found." });
     }
 
@@ -30,9 +38,18 @@ export const randomPet = async (req: Request, res: Response) => {
     };
 
     const [metPets, blockedUsers, savedUsers] = await Promise.all([
-      prisma.user_HaveMet.findMany({ where: { user_id: id }, select: { met_user_id: true } }),
-      prisma.user_Blocked.findMany({ where: { user_id: id }, select: { blocked_user_id: true } }),
-      prisma.user_Saved.findMany({ where: { user_id: id }, select: { saved_user_id: true } }),
+      prisma.user_HaveMet.findMany({
+        where: { user_id: id },
+        select: { met_user_id: true },
+      }),
+      prisma.user_Blocked.findMany({
+        where: { user_id: id },
+        select: { blocked_user_id: true },
+      }),
+      prisma.user_Saved.findMany({
+        where: { user_id: id },
+        select: { saved_user_id: true },
+      }),
     ]);
 
     const excludedIds = [
@@ -75,7 +92,9 @@ export const randomPet = async (req: Request, res: Response) => {
       );
 
     if (usersWithinDistance.length === 0) {
-      return res.status(404).json({ error: "No pets found within the specified distance." });
+      return res
+        .status(404)
+        .json({ error: "No pets found within the specified distance." });
     }
 
     // Shuffle the users to return random results
@@ -182,35 +201,44 @@ export const likePet = async (req: Request, res: Response) => {
 
       if (user?.expo_token && Expo.isExpoPushToken(user.expo_token)) {
         try {
-            await expo.sendPushNotificationsAsync([
-                {
-                    to: user.expo_token,
-                    sound: 'default',
-                    title: "New Match",
-                    body: `You have matched with ${userTarget?.firstname}!`,
-                    data: { match: newMatch },
-                },
-            ]);
-        } catch (notificationError) {
-            console.error("Failed to send notification to user:", notificationError);
-        }
-    }
-
-    if (userTarget?.expo_token && Expo.isExpoPushToken(userTarget.expo_token)) {
-      try {
           await expo.sendPushNotificationsAsync([
-              {
-                  to: userTarget.expo_token,
-                  sound: 'default',
-                  title: "New Match",
-                  body: `You have matched with ${user?.firstname}!`,
-                  data: { match: newMatch },
-              },
+            {
+              to: user.expo_token,
+              sound: "default",
+              title: "New Match",
+              body: `You have matched with ${userTarget?.firstname}!`,
+              data: { match: newMatch },
+            },
           ]);
-      } catch (notificationError) {
-          console.error("Failed to send notification to target user:", notificationError);
+        } catch (notificationError) {
+          console.error(
+            "Failed to send notification to user:",
+            notificationError
+          );
+        }
       }
-  }
+
+      if (
+        userTarget?.expo_token &&
+        Expo.isExpoPushToken(userTarget.expo_token)
+      ) {
+        try {
+          await expo.sendPushNotificationsAsync([
+            {
+              to: userTarget.expo_token,
+              sound: "default",
+              title: "New Match",
+              body: `You have matched with ${user?.firstname}!`,
+              data: { match: newMatch },
+            },
+          ]);
+        } catch (notificationError) {
+          console.error(
+            "Failed to send notification to target user:",
+            notificationError
+          );
+        }
+      }
       res.status(201).json(newMatch);
     } else {
       const newLike = await prisma.user_Interest.create({
@@ -461,6 +489,13 @@ export const unMatchUser = async (req: Request, res: Response) => {
       },
     });
 
+    await prisma.pet_Interest.deleteMany({
+      where: {
+        user_id: id,
+        target_user_id: parseInt(target_user_id),
+      },
+    });
+
     await prisma.user_Interest.deleteMany({
       where: {
         user_id: id,
@@ -470,10 +505,10 @@ export const unMatchUser = async (req: Request, res: Response) => {
 
     res.json("Unmatched successfully");
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error: "Failed to unmatch user" });
   }
 };
-
 
 export const getPetInterest = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
@@ -490,7 +525,7 @@ export const getPetInterest = async (req: Request, res: Response) => {
     const targetInterest = await prisma.pet_Interest.findMany({
       where: {
         user_id: parseInt(target_user_id),
-        target_user_id: id
+        target_user_id: id,
       },
       select: {
         pet: {
@@ -502,20 +537,20 @@ export const getPetInterest = async (req: Request, res: Response) => {
             gender: true,
             pet_description: true,
             breed: {
-                select: {
-                  breed_id: true,
-                  breedName: true,
-                },
+              select: {
+                breed_id: true,
+                breedName: true,
               },
-          }
-        }
-      }
+            },
+          },
+        },
+      },
     });
 
     const yourInterest = await prisma.pet_Interest.findMany({
       where: {
         user_id: id,
-        target_user_id: parseInt(target_user_id)
+        target_user_id: parseInt(target_user_id),
       },
       select: {
         pet: {
@@ -527,20 +562,21 @@ export const getPetInterest = async (req: Request, res: Response) => {
             gender: true,
             pet_description: true,
             breed: {
-                select: {
-                  breed_id: true,
-                  breedName: true,
-                },
+              select: {
+                breed_id: true,
+                breedName: true,
               },
-          }
-        }
-      }
+            },
+          },
+        },
+      },
     });
 
-    res.json({ targetPetInterest: targetInterest, yourPetInterest: yourInterest });
+    res.json({
+      targetPetInterest: targetInterest,
+      yourPetInterest: yourInterest,
+    });
   } catch (error) {
     res.status(500).json({ error: "Failed to get interest info" });
   }
 };
-
-

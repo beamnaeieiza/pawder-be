@@ -26,9 +26,15 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const user = yield prisma.user.findUnique({
             where: { user_id: id },
-            select: { location_latitude: true, location_longitude: true, distance_interest: true },
+            select: {
+                location_latitude: true,
+                location_longitude: true,
+                distance_interest: true,
+            },
         });
-        if (!user || user.location_latitude === null || user.location_longitude === null) {
+        if (!user ||
+            user.location_latitude === null ||
+            user.location_longitude === null) {
             return res.status(404).json({ error: "User location not found." });
         }
         const userLocation = {
@@ -36,9 +42,18 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             longitude: parseFloat(user.location_longitude),
         };
         const [metPets, blockedUsers, savedUsers] = yield Promise.all([
-            prisma.user_HaveMet.findMany({ where: { user_id: id }, select: { met_user_id: true } }),
-            prisma.user_Blocked.findMany({ where: { user_id: id }, select: { blocked_user_id: true } }),
-            prisma.user_Saved.findMany({ where: { user_id: id }, select: { saved_user_id: true } }),
+            prisma.user_HaveMet.findMany({
+                where: { user_id: id },
+                select: { met_user_id: true },
+            }),
+            prisma.user_Blocked.findMany({
+                where: { user_id: id },
+                select: { blocked_user_id: true },
+            }),
+            prisma.user_Saved.findMany({
+                where: { user_id: id },
+                select: { saved_user_id: true },
+            }),
         ]);
         const excludedIds = [
             ...metPets.map((m) => m.met_user_id),
@@ -72,7 +87,9 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             parseFloat(user.distance_interest) // Filter by user-defined distance interest
         );
         if (usersWithinDistance.length === 0) {
-            return res.status(404).json({ error: "No pets found within the specified distance." });
+            return res
+                .status(404)
+                .json({ error: "No pets found within the specified distance." });
         }
         // Shuffle the users to return random results
         const shuffledUsers = usersWithinDistance.sort(() => 0.5 - Math.random());
@@ -170,7 +187,7 @@ const likePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     yield expo.sendPushNotificationsAsync([
                         {
                             to: user.expo_token,
-                            sound: 'default',
+                            sound: "default",
                             title: "New Match",
                             body: `You have matched with ${userTarget === null || userTarget === void 0 ? void 0 : userTarget.firstname}!`,
                             data: { match: newMatch },
@@ -181,12 +198,13 @@ const likePet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
                     console.error("Failed to send notification to user:", notificationError);
                 }
             }
-            if ((userTarget === null || userTarget === void 0 ? void 0 : userTarget.expo_token) && expo_server_sdk_1.Expo.isExpoPushToken(userTarget.expo_token)) {
+            if ((userTarget === null || userTarget === void 0 ? void 0 : userTarget.expo_token) &&
+                expo_server_sdk_1.Expo.isExpoPushToken(userTarget.expo_token)) {
                 try {
                     yield expo.sendPushNotificationsAsync([
                         {
                             to: userTarget.expo_token,
-                            sound: 'default',
+                            sound: "default",
                             title: "New Match",
                             body: `You have matched with ${user === null || user === void 0 ? void 0 : user.firstname}!`,
                             data: { match: newMatch },
@@ -436,6 +454,12 @@ const unMatchUser = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
                 ],
             },
         });
+        yield prisma.pet_Interest.deleteMany({
+            where: {
+                user_id: id,
+                target_user_id: parseInt(target_user_id),
+            },
+        });
         yield prisma.user_Interest.deleteMany({
             where: {
                 user_id: id,
@@ -445,6 +469,7 @@ const unMatchUser = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
         res.json("Unmatched successfully");
     }
     catch (error) {
+        console.log(error);
         res.status(500).json({ error: "Failed to unmatch user" });
     }
 });
@@ -463,7 +488,7 @@ const getPetInterest = (req, res) => __awaiter(void 0, void 0, void 0, function*
         const targetInterest = yield prisma.pet_Interest.findMany({
             where: {
                 user_id: parseInt(target_user_id),
-                target_user_id: id
+                target_user_id: id,
             },
             select: {
                 pet: {
@@ -480,14 +505,14 @@ const getPetInterest = (req, res) => __awaiter(void 0, void 0, void 0, function*
                                 breedName: true,
                             },
                         },
-                    }
-                }
-            }
+                    },
+                },
+            },
         });
         const yourInterest = yield prisma.pet_Interest.findMany({
             where: {
                 user_id: id,
-                target_user_id: parseInt(target_user_id)
+                target_user_id: parseInt(target_user_id),
             },
             select: {
                 pet: {
@@ -504,11 +529,14 @@ const getPetInterest = (req, res) => __awaiter(void 0, void 0, void 0, function*
                                 breedName: true,
                             },
                         },
-                    }
-                }
-            }
+                    },
+                },
+            },
         });
-        res.json({ targetPetInterest: targetInterest, yourPetInterest: yourInterest });
+        res.json({
+            targetPetInterest: targetInterest,
+            yourPetInterest: yourInterest,
+        });
     }
     catch (error) {
         res.status(500).json({ error: "Failed to get interest info" });
