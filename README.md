@@ -14,7 +14,7 @@ This is a Pawder application build with TypeScript , using Express.js Framework 
 
 1. Clone the repository to your files.
 2. Check the .env file about the DATABASE_URL
-3. Running using `npm install`
+3. Install dependencies by run `npm install`
 4. Generate the prisma schema to use along with all codes by run `npx prisma generate`
 5. Start the back-end server by run `npm start`, (The server will run at port localhost:8000)
 
