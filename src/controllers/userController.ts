@@ -22,7 +22,6 @@ export const signUp = async (req: Request, res: Response) => {
   } = req.body;
 
   try {
-    // Check if the email already exists
     const existingUser = await prisma.user.findFirst({
       where: { email: email },
     });
@@ -31,10 +30,8 @@ export const signUp = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "Email is already in use" });
     }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds; adjust for desired security level
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Create the new user
     const newUser = await prisma.user.create({
       data: {
         email,
@@ -60,7 +57,7 @@ export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   try {
-    // Check if the user exists
+
     const existingUser = await prisma.user.findFirst({
       where: { email: email },
     });
@@ -69,14 +66,12 @@ export const login = async (req: Request, res: Response) => {
       return res.status(400).json({ error: "User does not exist" });
     }
 
-    // Check if the password field is not null
     if (!existingUser.password) {
       return res
         .status(500)
         .json({ error: "Password is missing for this user" });
     }
 
-    // Compare the hashed password
     const isPasswordValid = await bcrypt.compare(
       password,
       existingUser.password
@@ -85,14 +80,12 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ error: "Invalid password" });
     }
 
-    // Generate a JWT token
     const token = jwt.sign(
       { userId: existingUser.user_id, username: existingUser.username },
       JWT_SECRET,
       { expiresIn: "24h" }
     );
 
-    // Respond with the token
     res
       .status(200)
       .json({ token, message: "Login successful", twoFA: existingUser.twoFA });
@@ -102,7 +95,6 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
-// Get all users
 export const getUsers = async (req: Request, res: Response) => {
   try {
     const users = await prisma.user.findMany();
@@ -112,7 +104,6 @@ export const getUsers = async (req: Request, res: Response) => {
   }
 };
 
-// Get a single user by ID
 export const getUserById = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
   try {
@@ -242,7 +233,6 @@ export const getDogById = async (req: Request, res: Response) => {
   }
 };
 
-// Update a user by ID
 export const updateUser = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
   const {
@@ -273,7 +263,6 @@ export const updateUser = async (req: Request, res: Response) => {
   }
 };
 
-//Create pet Profile
 export const createPet = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
   let {
@@ -373,7 +362,6 @@ export const getPetList = async (req: Request, res: Response) => {
   }
 };
 
-// Delete a user by ID
 export const deleteUser = async (req: Request, res: Response) => {
   const { id } = req.params;
   try {

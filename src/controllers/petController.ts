@@ -8,7 +8,6 @@ dotenv.config();
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET as string;
 
-//Create pet Profile
 export const getPetList = async (req: Request, res: Response) => {
   const id = (req as any).user.userId;
   try {

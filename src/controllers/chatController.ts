@@ -202,11 +202,11 @@ export const sendChatMessage = async (req: Request, res: Response) => {
                             channelId: 'default',
                             priority: 'high',
                             sound: 'default',
-                            vibrate: [0, 250, 250, 250], // Optional: vibration pattern
+                            vibrate: [0, 250, 250, 250], 
                           },
                           ios: {
                             sound: 'default',
-                            badge: 1, // Optional: Update app badge count on iOS
+                            badge: 1, 
                           }
                     },
                     
@@ -410,9 +410,6 @@ export const getGroupChatMessage = async (req: Request, res: Response) => {
         group_id: existingChat.group_chat_id,
         group_name: existingChat.group_name,
         group_url: existingChat.group_url,
-        // createdAt: existingChat.createdAt,
-        // updatedAt: existingChat.updatedAt,
-        // group_members: groupMembers,
         messages: existingChat.messages
         
       });

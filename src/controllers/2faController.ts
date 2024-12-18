@@ -12,7 +12,7 @@ const JWT_SECRET = process.env.JWT_SECRET as string;
 const generateSecretKey = () => {
     const secret = speakeasy.generateSecret({ length: 20 });
     console.log("url = " + secret.otpauth_url);
-    return secret.base32; // Return the secret in base32 format
+    return secret.base32; 
   };
 
 const verifyTOTP = (secret: string, token: string) => {
@@ -27,9 +27,9 @@ const verifyTOTP = (secret: string, token: string) => {
 
     return speakeasy.totp.verify({
       secret,
-      encoding: 'base32', // Make sure the encoding matches your stored secret
+      encoding: 'base32',
       token,
-      window: 1, // Allow a window for code verification
+      window: 1, 
     });
   };
 
@@ -37,7 +37,7 @@ const verifyTOTP = (secret: string, token: string) => {
     const id = (req as any).user.userId;
   
     try {
-      // Generate the secret key for 2FA
+
       const user = await prisma.user.findUnique({
         where: { user_id: id },
         select: { twoFA: true }
@@ -47,23 +47,20 @@ const verifyTOTP = (secret: string, token: string) => {
         return res.status(404).json({ error: "User not found" });
     }
 
-    //   const secretKey = generateSecretKey();
-  
-      // Create the user with the secret key in the database
       const updatedUser = await prisma.user.update({
         where: {
             user_id: id,
         },
         data: {
           twoFA : !user.twoFA,
-        //   token: secretKey, // Store the secret key for 2FA
+
         },
       });
   
-      // Return the secret key or QR code URL to the user for setup
+
       res.status(201).json({
         message: `User ${updatedUser.twoFA ? 'enabled' : 'disabled'} 2FA successfully!`,
-        // twoFactorSecret: secretKey, // Optionally, send back the secret key
+
       });
     } catch (error) {
       console.error(error);
@@ -76,7 +73,6 @@ const verifyTOTP = (secret: string, token: string) => {
     const id = (req as any).user.userId;
   
     try {
-      // Get the user from the database
       const user = await prisma.user.findUnique({
         where: {
           user_id: id,
@@ -99,16 +95,7 @@ const verifyTOTP = (secret: string, token: string) => {
           token: secret.base32, // Store the secret key for 2FA
         },
       });
-      
-      // Generate the QR code URL for the user
-    //   const qrCodeUrl = speakeasy.otpauthURL({
-    //     secret: user.token || '', // Use the secret key stored in the database
-    //     label: "PawderApp", // Label for the QR code
-    //     issuer: "PawderApp", // Company name issuing the QR code
-    //   });
 
-    //   console.log("token :" + updateUser.token)
-  
       res.status(200).json({ qrCodeUrl });
     } catch (error) {
       console.error(error);
@@ -119,7 +106,7 @@ const verifyTOTP = (secret: string, token: string) => {
 
   export const verifyUserOTP = async (req: Request, res: Response) => {
     const id = (req as any).user.userId;
-    const { OTP } = req.body; // Include OTP from the user
+    const { OTP } = req.body; 
   
     try {
         
@@ -133,7 +120,6 @@ const verifyTOTP = (secret: string, token: string) => {
         return res.status(404).json({ error: "User not found" });
       }
   
-      // Verify the OTP code
       if (!user.token) {
         return res.status(400).json({ error: "2FA token is missing" });
       }

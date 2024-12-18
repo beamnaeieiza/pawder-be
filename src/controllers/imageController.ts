@@ -19,7 +19,7 @@ const containerClient = blobServiceClient.getContainerClient(containerName);
 const expo = new Expo();
 
 const upload = multer({
-    storage: multer.memoryStorage(), // Store files in memory for processing
+    storage: multer.memoryStorage(), 
   });
 
 export const uploadProfileImage = async (req: Request, res: Response) => {
@@ -39,7 +39,7 @@ export const uploadProfileImage = async (req: Request, res: Response) => {
 
     await blockBlobClient.uploadData(file.buffer, {
         blobHTTPHeaders: {
-          blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
+          blobContentType: file.mimetype, 
         },
       });
     const imageUrl = blockBlobClient.url;
@@ -77,13 +77,13 @@ export const createPetWithImages = async (req: Request, res: Response) => {
 
     const imageUrls: string[] = [];
 
-    for (const file of files.slice(0, 3)) { // Limit to max 3 images
+    for (const file of files.slice(0, 3)) { 
       const blobName = `image-${uuidv4()}.jpg`;
       const blockBlobClient = containerClient.getBlockBlobClient(blobName);
 
       await blockBlobClient.uploadData(file.buffer, {
         blobHTTPHeaders: {
-          blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
+          blobContentType: file.mimetype, 
         },
       });
 
@@ -138,7 +138,7 @@ export const createEventWithImage = async (req: Request, res: Response) => {
 
     await blockBlobClient.uploadData(file.buffer, {
         blobHTTPHeaders: {
-          blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
+          blobContentType: file.mimetype,
         },
       });
     const event_url = blockBlobClient.url;
@@ -191,7 +191,7 @@ export const updateEventWithImage = async (req: Request, res: Response) => {
 
     await blockBlobClient.uploadData(file.buffer, {
         blobHTTPHeaders: {
-          blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
+          blobContentType: file.mimetype, 
         },
       });
     const event_url = blockBlobClient.url;
@@ -234,7 +234,7 @@ export const createGroupChatWithImage = async (req: Request, res: Response) => {
 
     await blockBlobClient.uploadData(file.buffer, {
         blobHTTPHeaders: {
-          blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
+          blobContentType: file.mimetype, 
         },
       });
     const group_url = blockBlobClient.url;
@@ -274,7 +274,7 @@ export const sendChatImage = async (req: Request, res: Response) => {
 
     await blockBlobClient.uploadData(file.buffer, {
         blobHTTPHeaders: {
-          blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
+          blobContentType: file.mimetype, 
         },
       });
     const chat_url = blockBlobClient.url;
@@ -314,11 +314,11 @@ export const sendChatImage = async (req: Request, res: Response) => {
                     channelId: 'default',
                     priority: 'high',
                     sound: 'default',
-                    vibrate: [0, 250, 250, 250], // Optional: vibration pattern
+                    vibrate: [0, 250, 250, 250], 
                   },
                   ios: {
                     sound: 'default',
-                    badge: 1, // Optional: Update app badge count on iOS
+                    badge: 1, 
                   }
             },
             

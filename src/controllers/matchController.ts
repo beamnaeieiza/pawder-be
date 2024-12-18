@@ -56,10 +56,9 @@ export const randomPet = async (req: Request, res: Response) => {
       ...metPets.map((m) => m.met_user_id),
       ...blockedUsers.map((b) => b.blocked_user_id),
       ...savedUsers.map((s) => s.saved_user_id),
-      id, // Exclude the current user
+      id, 
     ];
 
-    // Fetch potential pets and filter by location
     const potentialPets = await prisma.user.findMany({
       where: {
         deactivate: false,
@@ -70,9 +69,9 @@ export const randomPet = async (req: Request, res: Response) => {
       include: {
         pets: {
           include: { habits: true },
-        }, // Include pets and habits
+        }, 
       },
-      take: 50, // Fetch a limited number of users
+      take: 50,
     });
 
     const usersWithinDistance = potentialPets
@@ -84,14 +83,14 @@ export const randomPet = async (req: Request, res: Response) => {
         const distanceInMeters = haversine(userLocation, petUserLocation);
         return {
           ...petUser,
-          distance: (distanceInMeters / 1000).toFixed(2), // Convert meters to kilometers
+          distance: (distanceInMeters / 1000).toFixed(2),
         };
       })
       .filter(
         (petUser) =>
           petUser.pets.length > 0 &&
           parseFloat(petUser.distance as string) <=
-            parseFloat(user.distance_interest as string) // Filter by user-defined distance interest
+            parseFloat(user.distance_interest as string)
       );
 
     if (usersWithinDistance.length === 0) {
@@ -100,9 +99,8 @@ export const randomPet = async (req: Request, res: Response) => {
         .json({ error: "No pets found within the specified distance." });
     }
 
-    // Shuffle the users to return random results
+
     const shuffledUsers = usersWithinDistance.sort(() => 0.5 - Math.random());
-    // console.log(1)
     res.json(shuffledUsers);
   } catch (error) {
     console.error(error);
@@ -523,7 +521,6 @@ export const getPetInterest = async (req: Request, res: Response) => {
     return res.status(400).json({ error: "pet_id is required" });
   }
 
-  // target_user_id = parseInt(target_user_id);
   try {
     const targetInterest = await prisma.pet_Interest.findMany({
       where: {

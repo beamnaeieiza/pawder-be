@@ -62,7 +62,7 @@ router.post(
 );
 router.post(
   "/users/createPetWithImage",
-  upload.array("files", 3), // Allow up to 10 files
+  upload.array("files", 3),
   authMiddleware,
   createPetWithImages
 );
