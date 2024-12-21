@@ -1,0 +1,4 @@
+message_id,chat_id,sender_id,receiver_id,types,message,read_status,createdAt
+724,35,65,64,TEXT,Hi,true,Thu Dec 12 2024 18:22:03 GMT+0700 (เวลาอินโดจีน)
+725,35,65,64,TEXT,Hello,false,Thu Dec 12 2024 18:25:57 GMT+0700 (เวลาอินโดจีน)
+726,36,66,1,TEXT,Hello,false,Wed Dec 18 2024 21:40:11 GMT+0700 (เวลาอินโดจีน)

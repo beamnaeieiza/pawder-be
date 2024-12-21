@@ -1,6 +1,6 @@
-// importCsv.js
+
 const fs = require('fs');
-const csv = require('csv-parser');  // Library to parse CSV
+const csv = require('csv-parser');
 const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
@@ -8,23 +8,21 @@ const prisma = new PrismaClient();
 async function importCsv() {
   const results = [];
 
-  // Read the CSV file
-  fs.createReadStream('dogdata.csv')  // Adjust the file path to your CSV file
+  fs.createReadStream('dogdata.csv')  
     .pipe(csv())
     .on('data', (data) => {
       results.push(data);
     })
     .on('end', async () => {
-      // After CSV is read, insert the data into the database
       for (let row of results) {
         try {
           await prisma.pet_Breed.create({
             data: {
-              breedName: row['Breed Name'],           // Example of a column name
+              breedName: row['Breed Name'],       
               group: row['Group'],
               heightInches: row['Height (Inches)'],
               weightPounds: row['Weight (Pounds)'],
-              personality: row['Personality'],        // This will be a string (comma or slash-separated)
+              personality: row['Personality'], 
               goodWithDogs: parseInt(row['Good with other dogs']),
               playfulnessLevel: parseInt(row['Playfulness Level']),
               watchdog: parseInt(row['Watchdog']),
@@ -43,5 +41,4 @@ async function importCsv() {
     });
 }
 
-// Run the import function
 importCsv();

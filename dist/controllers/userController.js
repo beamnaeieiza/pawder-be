@@ -23,16 +23,13 @@ const JWT_SECRET = process.env.JWT_SECRET;
 const signUp = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, username, password, phone_number, firstname, lastname, gender, birthdate, } = req.body;
     try {
-        // Check if the email already exists
         const existingUser = yield prisma.user.findFirst({
             where: { email: email },
         });
         if (existingUser) {
             return res.status(400).json({ error: "Email is already in use" });
         }
-        // Hash the password
-        const hashedPassword = yield bcrypt_1.default.hash(password, 10); // 10 is the salt rounds; adjust for desired security level
-        // Create the new user
+        const hashedPassword = yield bcrypt_1.default.hash(password, 10);
         const newUser = yield prisma.user.create({
             data: {
                 email,
@@ -57,27 +54,22 @@ exports.signUp = signUp;
 const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
     try {
-        // Check if the user exists
         const existingUser = yield prisma.user.findFirst({
             where: { email: email },
         });
         if (!existingUser) {
             return res.status(400).json({ error: "User does not exist" });
         }
-        // Check if the password field is not null
         if (!existingUser.password) {
             return res
                 .status(500)
                 .json({ error: "Password is missing for this user" });
         }
-        // Compare the hashed password
         const isPasswordValid = yield bcrypt_1.default.compare(password, existingUser.password);
         if (!isPasswordValid) {
             return res.status(401).json({ error: "Invalid password" });
         }
-        // Generate a JWT token
         const token = jsonwebtoken_1.default.sign({ userId: existingUser.user_id, username: existingUser.username }, JWT_SECRET, { expiresIn: "24h" });
-        // Respond with the token
         res
             .status(200)
             .json({ token, message: "Login successful", twoFA: existingUser.twoFA });
@@ -88,7 +80,6 @@ const login = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.login = login;
-// Get all users
 const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const users = yield prisma.user.findMany();
@@ -99,7 +90,6 @@ const getUsers = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     }
 });
 exports.getUsers = getUsers;
-// Get a single user by ID
 const getUserById = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
     try {
@@ -232,7 +222,6 @@ const getDogById = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.getDogById = getDogById;
-// Update a user by ID
 const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
     const { firstname, lastname, email, gender, birthdate, location_latitude, location_longitude, } = req.body;
@@ -256,7 +245,6 @@ const updateUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.updateUser = updateUser;
-//Create pet Profile
 const createPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
     let { breed_id, petname, pet_url, gender, age, pet_description, mixed_breed, habitId, } = req.body;
@@ -344,7 +332,6 @@ const getPetList = (req, res) => __awaiter(void 0, void 0, void 0, function* () 
     }
 });
 exports.getPetList = getPetList;
-// Delete a user by ID
 const deleteUser = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { id } = req.params;
     try {

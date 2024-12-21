@@ -1,0 +1,10 @@
+notification_id,user_id,title,message,read_status,createdAt,updatedAt
+953,65,New Match,You have match with Chokdee,true,Thu Dec 12 2024 18:21:41 GMT+0700 (เวลาอินโดจีน),Thu Dec 12 2024 18:25:32 GMT+0700 (เวลาอินโดจีน)
+954,64,New Match,You have match with Awat,true,Thu Dec 12 2024 18:21:41 GMT+0700 (เวลาอินโดจีน),Thu Dec 12 2024 18:22:48 GMT+0700 (เวลาอินโดจีน)
+955,64,New Message,You have a new message from Awat.,true,Thu Dec 12 2024 18:22:04 GMT+0700 (เวลาอินโดจีน),Thu Dec 12 2024 18:22:48 GMT+0700 (เวลาอินโดจีน)
+956,30,New Enrollment,Awat has enrolled in your event 'Test Dog Event'!,false,Thu Dec 12 2024 18:23:04 GMT+0700 (เวลาอินโดจีน),Thu Dec 12 2024 18:23:04 GMT+0700 (เวลาอินโดจีน)
+957,64,New Message,You have a new message from Awat.,false,Thu Dec 12 2024 18:25:58 GMT+0700 (เวลาอินโดจีน),Thu Dec 12 2024 18:25:58 GMT+0700 (เวลาอินโดจีน)
+959,1,New Match,You have match with User,false,Wed Dec 18 2024 17:46:41 GMT+0700 (เวลาอินโดจีน),Wed Dec 18 2024 17:46:41 GMT+0700 (เวลาอินโดจีน)
+961,1,New Match,You have match with User,false,Wed Dec 18 2024 20:05:18 GMT+0700 (เวลาอินโดจีน),Wed Dec 18 2024 20:05:18 GMT+0700 (เวลาอินโดจีน)
+962,1,New Enrollment,User has enrolled in your event 'Meet with famous chihuahua'!,false,Wed Dec 18 2024 21:09:14 GMT+0700 (เวลาอินโดจีน),Wed Dec 18 2024 21:09:14 GMT+0700 (เวลาอินโดจีน)
+963,1,New Message,You have a new message from User.,false,Wed Dec 18 2024 21:40:12 GMT+0700 (เวลาอินโดจีน),Wed Dec 18 2024 21:40:12 GMT+0700 (เวลาอินโดจีน)

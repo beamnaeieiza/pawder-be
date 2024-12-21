@@ -59,9 +59,8 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             ...metPets.map((m) => m.met_user_id),
             ...blockedUsers.map((b) => b.blocked_user_id),
             ...savedUsers.map((s) => s.saved_user_id),
-            id, // Exclude the current user
+            id,
         ];
-        // Fetch potential pets and filter by location
         const potentialPets = yield prisma.user.findMany({
             where: {
                 deactivate: false,
@@ -72,9 +71,9 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
             include: {
                 pets: {
                     include: { habits: true },
-                }, // Include pets and habits
+                },
             },
-            take: 50, // Fetch a limited number of users
+            take: 50,
         });
         const usersWithinDistance = potentialPets
             .map((petUser) => {
@@ -87,16 +86,13 @@ const randomPet = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         })
             .filter((petUser) => petUser.pets.length > 0 &&
             parseFloat(petUser.distance) <=
-                parseFloat(user.distance_interest) // Filter by user-defined distance interest
-        );
+                parseFloat(user.distance_interest));
         if (usersWithinDistance.length === 0) {
             return res
                 .status(404)
                 .json({ error: "No pets found within the specified distance." });
         }
-        // Shuffle the users to return random results
         const shuffledUsers = usersWithinDistance.sort(() => 0.5 - Math.random());
-        // console.log(1)
         res.json(shuffledUsers);
     }
     catch (error) {
@@ -486,7 +482,6 @@ const getPetInterest = (req, res) => __awaiter(void 0, void 0, void 0, function*
     else {
         return res.status(400).json({ error: "pet_id is required" });
     }
-    // target_user_id = parseInt(target_user_id);
     try {
         const targetInterest = yield prisma.pet_Interest.findMany({
             where: {

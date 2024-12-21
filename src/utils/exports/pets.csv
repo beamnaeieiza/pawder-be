@@ -1,0 +1,31 @@
+pet_id,user_id,breed_id,pet_url,pet_url2,pet_url3,petname,pet_description,gender,age,size,weight,height,rating,mixed_breed
+59,3,127,https://pawder.blob.core.windows.net/picture/image-79a6ab85-a54c-411e-a048-15ec43d14be5.jpg,,,Caramel,"Friendly, Cute",FEMALE,0.9,,,,,
+60,1,203,https://pawder.blob.core.windows.net/picture/image-4791d620-58f7-4948-a586-ddf94e9a8554.jpg,,,Zidane,Cute white Pomeranian,MALE,3.2,,,,,
+61,32,244,https://pawder.blob.core.windows.net/picture/image-402083e3-b832-41e7-b373-c7692db986c4.jpg,,,Fuji,"Siberian, Playful",FEMALE,0.6,,,,,
+63,33,68,https://pawder.blob.core.windows.net/picture/image-9f69f44f-8b6f-4ddc-bee4-9b36c766f870.jpg,,,Jun,Bulldog Little chubby,MALE,0.7,,25,48.90000152587891,,
+109,30,127,https://pawder.blob.core.windows.net/picture/image-7a97f4c0-b988-467c-b1c4-1cd299b168e8.jpg,,,Rod Thung,,MALE,1.4,,25,48.90000152587891,,
+110,21,216,https://pawder.blob.core.windows.net/picture/image-2c49db7f-4a8a-483c-a3c9-c15d0f5f904f.jpg,,,Gunn Jomparang,Pug Jomparang,MALE,2.2,,6.300000093877316,35.30000030249357,,
+111,30,203,https://pawder.blob.core.windows.net/picture/image-f8715881-f8c4-4ace-8378-7e6258b6c8cf.jpg,,,Blue,,MALE,3,,2.600000143051147,17,,
+113,37,127,https://pawder.blob.core.windows.net/picture/image-cacc4ca5-0f5c-4789-9420-ad0eafc7bbb0.jpg,,,Bul,,MALE,2,,20,51.5,,Pomeranian
+116,39,4,https://pawder.blob.core.windows.net/picture/image-4791d620-58f7-4948-a586-ddf94e9a8554.jpg,,,Nae Kum,"Buddhist dog
+",MALE,4.6,,6.200000077486038,51.50000054389238,,Akite
+117,31,29,https://pawder.blob.core.windows.net/picture/image-79a6ab85-a54c-411e-a048-15ec43d14be5.jpg,,,Jonathan,Beagle Jonathan,MALE,5.9,,7.400000095367432,60.3000006750226,,
+118,4,81,https://pawder.blob.core.windows.net/picture/image-0d7d4169-353b-425a-bbe8-a79787aa6f6b.jpg,,,Cake,"Very energetic, want to find a friendly dog to play with
+
+",FEMALE,2.2,,13.30000019073486,28.60000038146973,,
+119,36,6,https://pawder.blob.core.windows.net/picture/image-0bfba492-ec8e-4165-9910-6538fb0d8b4b.jpg,,,Moo deng,Moo deng,MALE,3.7,,5.500000067055225,50.00000052154064,,
+121,38,33,https://pawder.blob.core.windows.net/picture/image-cacc4ca5-0f5c-4789-9420-ad0eafc7bbb0.jpg,,,Eric Ten Hag,"Dog at Old Trafford, Manchester United, England",MALE,2,,12.60000017285347,43.90000043064356,,Netherland
+122,1,203,https://pawder.blob.core.windows.net/picture/image-2a217558-d664-4426-b081-6b1d02756aac.jpg,https://pawder.blob.core.windows.net/picture/image-cf9c11dd-8f36-4d8a-beb9-16b94d148f3e.jpg,,Donut,"Hello, this is donut",MALE,0.6,,,,,Pomeranian
+128,44,203,https://pawder.blob.core.windows.net/picture/image-2a217558-d664-4426-b081-6b1d02756aac.jpg,https://pawder.blob.core.windows.net/picture/image-c9e79305-c3fe-4a28-9565-b1b522a57a08.jpg,,Miki,,FEMALE,1.4,,8.600000381469727,23,,
+129,51,81,https://pawder.blob.core.windows.net/picture/image-bae265b0-1bcc-4cf3-a768-99d23f03ca60.jpg,,,Miji,,MALE,1.3,,7.200000286102295,34,,
+130,52,203,https://pawder.blob.core.windows.net/picture/image-cc74102a-b861-4a5b-bd56-2c164d25a6f2.jpg,https://pawder.blob.core.windows.net/picture/image-390d5650-84f5-46ad-92b2-144e4f830ba0.jpg,,Snow,,MALE,1.5,,6.5,26.5,,
+131,53,122,https://pawder.blob.core.windows.net/picture/image-6924ed5d-f98e-4939-8511-cdb8141eb424.jpg,,,Moodheng,,MALE,1.5,,11.80000019073486,48.79999923706055,,
+132,54,81,https://pawder.blob.core.windows.net/picture/image-2656034c-b483-4c9a-b84a-72cd7ee254f2.jpg,,,Pele,"Gray Chihuahua
+",MALE,2.4,,8.5,28.80000114440918,,
+135,58,7,https://pawder.blob.core.windows.net/picture/image-dd4860fc-a2f2-4639-8a24-5e5a19fe43ef.jpg,,,Mook,,MALE,2.5,,6,15,,
+136,44,203,https://pawder.blob.core.windows.net/picture/image-99e07203-b40f-489a-b778-2adecb104fcf.jpg,,,Shower,,MALE,1.2,,6,20,,
+137,63,38,https://pawder.blob.core.windows.net/picture/image-7e6a0d78-f7dd-41c2-9ce7-cdafee1ed692.jpg,,,Anthony,nice dogs,MALE,4.8,,33,30,,
+138,64,205,https://pawder.blob.core.windows.net/picture/image-de00303c-5cf8-43db-8934-4a90adc77cd3.jpg,,,Audi,,FEMALE,2.1,,9,15,,
+139,65,205,https://pawder.blob.core.windows.net/picture/image-771f759e-46eb-45b3-922e-8b03d0b6f8c0.jpg,,,Mhookrob,,MALE,1.2,,8,20,,
+140,66,4,https://pawder.blob.core.windows.net/picture/image-601810ad-38be-49f1-82ee-c116a8a238b9.jpg,,,ManualDog,This dog profile is for user manual purpose. Do not interact with it.,MALE,1.2,,1,32,,
+141,66,,https://pawder.blob.core.windows.net/picture/image-06309e32-e82d-492b-95ff-b8f59d0ba6f8.jpg,,,Jiw,Dog in kmutt,MALE,1.5,,25,32,,mid-road

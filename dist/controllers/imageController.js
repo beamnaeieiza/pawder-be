@@ -28,7 +28,7 @@ const containerName = "picture";
 const containerClient = blobServiceClient.getContainerClient(containerName);
 const expo = new expo_server_sdk_1.Expo();
 const upload = (0, multer_1.default)({
-    storage: multer_1.default.memoryStorage(), // Store files in memory for processing
+    storage: multer_1.default.memoryStorage(),
 });
 const uploadProfileImage = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const id = req.user.userId;
@@ -41,7 +41,7 @@ const uploadProfileImage = (req, res) => __awaiter(void 0, void 0, void 0, funct
         const blockBlobClient = containerClient.getBlockBlobClient(blobName);
         yield blockBlobClient.uploadData(file.buffer, {
             blobHTTPHeaders: {
-                blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
+                blobContentType: file.mimetype,
             },
         });
         const imageUrl = blockBlobClient.url;
@@ -73,12 +73,12 @@ const createPetWithImages = (req, res) => __awaiter(void 0, void 0, void 0, func
             return res.status(400).json({ error: "No files uploaded" });
         }
         const imageUrls = [];
-        for (const file of files.slice(0, 3)) { // Limit to max 3 images
+        for (const file of files.slice(0, 3)) {
             const blobName = `image-${(0, uuid_1.v4)()}.jpg`;
             const blockBlobClient = containerClient.getBlockBlobClient(blobName);
             yield blockBlobClient.uploadData(file.buffer, {
                 blobHTTPHeaders: {
-                    blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
+                    blobContentType: file.mimetype,
                 },
             });
             imageUrls.push(blockBlobClient.url);
@@ -126,7 +126,7 @@ const createEventWithImage = (req, res) => __awaiter(void 0, void 0, void 0, fun
         const blockBlobClient = containerClient.getBlockBlobClient(blobName);
         yield blockBlobClient.uploadData(file.buffer, {
             blobHTTPHeaders: {
-                blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
+                blobContentType: file.mimetype,
             },
         });
         const event_url = blockBlobClient.url;
@@ -172,7 +172,7 @@ const updateEventWithImage = (req, res) => __awaiter(void 0, void 0, void 0, fun
         const blockBlobClient = containerClient.getBlockBlobClient(blobName);
         yield blockBlobClient.uploadData(file.buffer, {
             blobHTTPHeaders: {
-                blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
+                blobContentType: file.mimetype,
             },
         });
         const event_url = blockBlobClient.url;
@@ -208,7 +208,7 @@ const createGroupChatWithImage = (req, res) => __awaiter(void 0, void 0, void 0,
         const blockBlobClient = containerClient.getBlockBlobClient(blobName);
         yield blockBlobClient.uploadData(file.buffer, {
             blobHTTPHeaders: {
-                blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
+                blobContentType: file.mimetype,
             },
         });
         const group_url = blockBlobClient.url;
@@ -243,7 +243,7 @@ const sendChatImage = (req, res) => __awaiter(void 0, void 0, void 0, function* 
         const blockBlobClient = containerClient.getBlockBlobClient(blobName);
         yield blockBlobClient.uploadData(file.buffer, {
             blobHTTPHeaders: {
-                blobContentType: file.mimetype, // Set the content type of the blob (e.g., image/jpeg)
+                blobContentType: file.mimetype,
             },
         });
         const chat_url = blockBlobClient.url;
@@ -278,11 +278,11 @@ const sendChatImage = (req, res) => __awaiter(void 0, void 0, void 0, function* 
                             channelId: 'default',
                             priority: 'high',
                             sound: 'default',
-                            vibrate: [0, 250, 250, 250], // Optional: vibration pattern
+                            vibrate: [0, 250, 250, 250],
                         },
                         ios: {
                             sound: 'default',
-                            badge: 1, // Optional: Update app badge count on iOS
+                            badge: 1,
                         }
                     },
                 ];
